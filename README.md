@@ -197,3 +197,6 @@ flowchart TD
 
 ### Contact
 For architecture queries, contact **Platform Engineering (platform@xpsgroup.co.uk)**.
+
+## Version History
+- **v1.0.0**: Initial release with Synthetic Data, AI Agents, and Fabric integration.
