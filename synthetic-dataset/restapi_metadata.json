@@ -1,0 +1,40 @@
+[
+  {
+    "sourceSystem": {"id": "api-hr-001", "type": "REST_API", "name": "HR API"},
+    "objectType": "api",
+    "objectName": "Employee",
+    "schema": [
+      {"columnName": "employeeId", "dataType": "string", "nullable": false, "description": "Employee ID"},
+      {"columnName": "firstName", "dataType": "string", "nullable": false, "description": "First Name"},
+      {"columnName": "lastName", "dataType": "string", "nullable": false, "description": "Last Name"},
+      {"columnName": "hireDate", "dataType": "date", "nullable": false, "description": "Hire Date"}
+    ],
+    "cdc": {"enabled": false, "method": "none", "field": null},
+    "dependencies": [],
+    "lineageHints": [],
+    "dataQualityRules": [
+      {"ruleName": "NotNull_employeeId", "expression": "employeeId IS NOT NULL", "severity": "error"}
+    ],
+    "sla": {"expectedLatencyMinutes": 10, "maxDataDelayMinutes": 20},
+    "ownership": {"owner": "HR Data Team", "contact": "hr-support@xpsgroup.co.uk"}
+  },
+  {
+    "sourceSystem": {"id": "api-payroll-001", "type": "REST_API", "name": "Payroll API"},
+    "objectType": "api",
+    "objectName": "PayrollRun",
+    "schema": [
+      {"columnName": "runId", "dataType": "string", "nullable": false, "description": "Payroll Run ID"},
+      {"columnName": "employeeId", "dataType": "string", "nullable": false, "description": "Employee ID"},
+      {"columnName": "amount", "dataType": "decimal", "nullable": false, "description": "Payroll Amount"},
+      {"columnName": "runDate", "dataType": "date", "nullable": false, "description": "Run Date"}
+    ],
+    "cdc": {"enabled": false, "method": "none", "field": null},
+    "dependencies": ["Employee"],
+    "lineageHints": ["PayrollRun.employeeId = Employee.employeeId"],
+    "dataQualityRules": [
+      {"ruleName": "PositiveAmount", "expression": "amount >= 0", "severity": "error"}
+    ],
+    "sla": {"expectedLatencyMinutes": 20, "maxDataDelayMinutes": 40},
+    "ownership": {"owner": "Payroll Data Team", "contact": "payroll-support@xpsgroup.co.uk"}
+  }
+]

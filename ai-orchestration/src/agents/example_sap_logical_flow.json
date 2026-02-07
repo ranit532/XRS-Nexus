@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {"id": "extract", "type": "extract", "label": "Extract from SAP"},
+    {"id": "transform", "type": "transform", "label": "Transform to canonical model"},
+    {"id": "load", "type": "load", "label": "Load to target"}
+  ],
+  "edges": [
+    {"from": "extract", "to": "transform", "step": "transform"},
+    {"from": "transform", "to": "load", "step": "load_incremental"}
+  ],
+  "upstreamDependencies": ["EKKO"],
+  "downstreamDependencies": [],
+  "decisionRule": "SAP CDC Load"
+}

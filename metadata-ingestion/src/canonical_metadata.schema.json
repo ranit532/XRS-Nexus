@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CanonicalMetadata",
+  "type": "object",
+  "properties": {
+    "sourceSystem": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["SAP", "Salesforce", "REST_API", "File", "Stream"] },
+        "name": { "type": "string" }
+      },
+      "required": ["id", "type", "name"]
+    },
+    "objectType": {
+      "type": "string",
+      "enum": ["table", "api", "file", "stream"]
+    },
+    "objectName": { "type": "string" },
+    "schema": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "columnName": { "type": "string" },
+          "dataType": { "type": "string" },
+          "nullable": { "type": "boolean" },
+          "description": { "type": "string" }
+        },
+        "required": ["columnName", "dataType"]
+      }
+    },
+    "cdc": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "method": { "type": "string", "enum": ["timestamp", "log", "version", "none"] },
+        "field": { "type": "string" }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "lineageHints": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "dataQualityRules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ruleName": { "type": "string" },
+          "expression": { "type": "string" },
+          "severity": { "type": "string", "enum": ["info", "warning", "error"] }
+        },
+        "required": ["ruleName", "expression"]
+      }
+    },
+    "sla": {
+      "type": "object",
+      "properties": {
+        "expectedLatencyMinutes": { "type": "integer" },
+        "maxDataDelayMinutes": { "type": "integer" }
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "properties": {
+        "owner": { "type": "string" },
+        "contact": { "type": "string" }
+      }
+    }
+  },
+  "required": ["sourceSystem", "objectType", "objectName", "schema"]
+}

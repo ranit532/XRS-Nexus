@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: Integration Execution Status API
+  version: 1.0.0
+  description: REST APIs for querying integration pipeline execution status, progress, and history.
+servers:
+  - url: /api
+paths:
+  /execution-status/{runId}:
+    get:
+      summary: Get execution status for a pipeline run
+      parameters:
+        - in: path
+          name: runId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Execution status for the run
+          content:
+            application/json:
+              example:
+                pipelineId: pipeline-123
+                runId: run-1707331200000
+                status: running
+                percentComplete: 66
+                currentStage: load
+                errors: []
+                stages:
+                  extract: { status: completed, startTime: 1707331200.0, endTime: 1707331201.0 }
+                  transform: { status: completed, startTime: 1707331201.0, endTime: 1707331202.0 }
+                  load: { status: running, startTime: 1707331202.0, endTime: null }
+                slaBreached: false
+                estimatedTimeRemaining: 1
+  /execution-status:
+    get:
+      summary: List historical pipeline runs
+      parameters:
+        - in: query
+          name: pipelineId
+          schema:
+            type: string
+          description: Filter by pipelineId
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, running, completed, failed]
+          description: Filter by run status
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+          description: Page size
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            default: 0
+          description: Offset for pagination
+      responses:
+        '200':
+          description: List of pipeline runs
+          content:
+            application/json:
+              example:
+                total: 2
+                runs:
+                  - pipelineId: pipeline-123
+                    runId: run-1707331200000
+                    status: completed
+                    percentComplete: 100
+                    currentStage: null
+                    errors: []
+                    slaBreached: false
+                    startTime: 1707331200.0
+                    endTime: 1707331210.0
+                  - pipelineId: pipeline-456
+                    runId: run-1707331300000
+                    status: failed
+                    percentComplete: 50
+                    currentStage: transform
+                    errors: ["Transformation error"]
+                    slaBreached: true
+                    startTime: 1707331300.0
+                    endTime: 1707331310.0

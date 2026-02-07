@@ -1,0 +1,21 @@
+{
+  "GET /execution-status/{runId}": {
+    "description": "Get execution status and telemetry for a pipeline run.",
+    "response": {
+      "pipelineId": "string",
+      "runId": "string",
+      "stages": {
+        "extract": {"status": "pending|running|completed|failed", "startTime": "float", "endTime": "float"},
+        "transform": {"status": "pending|running|completed|failed", "startTime": "float", "endTime": "float"},
+        "load": {"status": "pending|running|completed|failed", "startTime": "float", "endTime": "float"}
+      },
+      "currentStage": "string",
+      "startTime": "float",
+      "endTime": "float|null",
+      "slaMinutes": "int",
+      "slaBreached": "bool",
+      "percentComplete": "int",
+      "estimatedTimeRemaining": "int|null"
+    }
+  }
+}

@@ -1,0 +1,40 @@
+[
+  {
+    "sourceSystem": {"id": "sf-prod-001", "type": "Salesforce", "name": "Salesforce Production"},
+    "objectType": "api",
+    "objectName": "Account",
+    "schema": [
+      {"columnName": "Id", "dataType": "string", "nullable": false, "description": "Account ID"},
+      {"columnName": "Name", "dataType": "string", "nullable": false, "description": "Account Name"},
+      {"columnName": "CreatedDate", "dataType": "timestamp", "nullable": false, "description": "Created Date"},
+      {"columnName": "SystemModstamp", "dataType": "timestamp", "nullable": false, "description": "System Modstamp"}
+    ],
+    "cdc": {"enabled": true, "method": "version", "field": "SystemModstamp"},
+    "dependencies": [],
+    "lineageHints": [],
+    "dataQualityRules": [
+      {"ruleName": "ValidId", "expression": "Id LIKE '001%'", "severity": "warning"}
+    ],
+    "sla": {"expectedLatencyMinutes": 15, "maxDataDelayMinutes": 30},
+    "ownership": {"owner": "CRM Data Team", "contact": "crm-support@xpsgroup.co.uk"}
+  },
+  {
+    "sourceSystem": {"id": "sf-prod-001", "type": "Salesforce", "name": "Salesforce Production"},
+    "objectType": "api",
+    "objectName": "Opportunity",
+    "schema": [
+      {"columnName": "Id", "dataType": "string", "nullable": false, "description": "Opportunity ID"},
+      {"columnName": "AccountId", "dataType": "string", "nullable": false, "description": "Account ID"},
+      {"columnName": "Amount", "dataType": "decimal", "nullable": true, "description": "Opportunity Amount"},
+      {"columnName": "CloseDate", "dataType": "date", "nullable": false, "description": "Close Date"}
+    ],
+    "cdc": {"enabled": false, "method": "none", "field": null},
+    "dependencies": ["Account"],
+    "lineageHints": ["Opportunity.AccountId = Account.Id"],
+    "dataQualityRules": [
+      {"ruleName": "PositiveAmount", "expression": "Amount >= 0", "severity": "warning"}
+    ],
+    "sla": {"expectedLatencyMinutes": 30, "maxDataDelayMinutes": 60},
+    "ownership": {"owner": "CRM Data Team", "contact": "crm-support@xpsgroup.co.uk"}
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "lineageGraph": {
+    "nodes": [
+      {"node": "string", "field": "string"}
+    ],
+    "edges": [
+      {"from": {"node": "string", "field": "string"}, "to": {"node": "string", "field": "string"}}
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "auditId": "audit-20260207-001",
+  "timestamp": "2026-02-07T12:34:56Z",
+  "userId": "user-123",
+  "userRole": "DataEngineer",
+  "action": "PipelineStrategySelected",
+  "resourceType": "Pipeline",
+  "resourceId": "pipeline-abc",
+  "previousVersion": null,
+  "newVersion": {
+    "etlStrategy": {
+      "mode": "cdc",
+      "pipelineTemplate": "ADF",
+      "parameters": {"objectName": "EKPO"}
+    }
+  },
+  "aiDecision": {
+    "agent": "ETLStrategyAgent",
+    "input": {
+      "logicalFlow": {"decisionRule": "SAP CDC Load"},
+      "canonicalMetadata": {"objectName": "EKPO"},
+      "constraints": {"sla": {"expectedLatencyMinutes": 60}}
+    },
+    "output": {
+      "etlStrategy": {
+        "mode": "cdc",
+        "pipelineTemplate": "ADF",
+        "parameters": {"objectName": "EKPO"}
+      },
+      "status": "success",
+      "errors": []
+    },
+    "explanation": "Selected CDC mode and ADF template based on SAP source and CDC config."
+  },
+  "explainability": {
+    "rationale": "SAP source with CDC enabled requires incremental load for efficiency and compliance.",
+    "alternatives": ["Batch full load (less efficient)", "Streaming (not supported for SAP)"]
+  }
+}

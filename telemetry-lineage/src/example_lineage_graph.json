@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {"node": "SAP_EKPO", "field": "EBELN"},
+    {"node": "Lakehouse_PurchaseOrder", "field": "PurchaseOrderId"},
+    {"node": "Analytics_PurchaseOrder", "field": "PO_ID"},
+    {"node": "SAP_EKPO", "field": "MATNR"},
+    {"node": "Lakehouse_PurchaseOrder", "field": "MaterialId"}
+  ],
+  "edges": [
+    {"from": {"node": "SAP_EKPO", "field": "EBELN"}, "to": {"node": "Lakehouse_PurchaseOrder", "field": "PurchaseOrderId"}},
+    {"from": {"node": "Lakehouse_PurchaseOrder", "field": "PurchaseOrderId"}, "to": {"node": "Analytics_PurchaseOrder", "field": "PO_ID"}},
+    {"from": {"node": "SAP_EKPO", "field": "MATNR"}, "to": {"node": "Lakehouse_PurchaseOrder", "field": "MaterialId"}}
+  ]
+}

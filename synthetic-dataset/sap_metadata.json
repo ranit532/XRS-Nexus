@@ -1,0 +1,40 @@
+[
+  {
+    "sourceSystem": {"id": "sap-erp-001", "type": "SAP", "name": "SAP ERP Central"},
+    "objectType": "table",
+    "objectName": "EKPO",
+    "schema": [
+      {"columnName": "EBELN", "dataType": "string", "nullable": false, "description": "Purchasing Document Number"},
+      {"columnName": "EBELP", "dataType": "integer", "nullable": false, "description": "Item Number"},
+      {"columnName": "MATNR", "dataType": "string", "nullable": true, "description": "Material Number"},
+      {"columnName": "LAST_CHANGED_AT", "dataType": "timestamp", "nullable": false, "description": "Last Changed Timestamp"}
+    ],
+    "cdc": {"enabled": true, "method": "timestamp", "field": "LAST_CHANGED_AT"},
+    "dependencies": ["EKKO"],
+    "lineageHints": ["EKKO.EBELN = EKPO.EBELN"],
+    "dataQualityRules": [
+      {"ruleName": "NotNull_EBELN", "expression": "EBELN IS NOT NULL", "severity": "error"},
+      {"ruleName": "ValidMaterial", "expression": "MATNR IS NOT NULL OR MATNR = ''", "severity": "warning"}
+    ],
+    "sla": {"expectedLatencyMinutes": 60, "maxDataDelayMinutes": 120},
+    "ownership": {"owner": "SAP Data Team", "contact": "sap-support@xpsgroup.co.uk"}
+  },
+  {
+    "sourceSystem": {"id": "sap-erp-001", "type": "SAP", "name": "SAP ERP Central"},
+    "objectType": "idoc",
+    "objectName": "ORDERS05",
+    "schema": [
+      {"columnName": "DOCNUM", "dataType": "string", "nullable": false, "description": "IDoc Number"},
+      {"columnName": "IDOCTYP", "dataType": "string", "nullable": false, "description": "IDoc Type"},
+      {"columnName": "CREDAT", "dataType": "date", "nullable": false, "description": "Created On"}
+    ],
+    "cdc": {"enabled": false, "method": "none", "field": null},
+    "dependencies": [],
+    "lineageHints": [],
+    "dataQualityRules": [
+      {"ruleName": "NotNull_DOCNUM", "expression": "DOCNUM IS NOT NULL", "severity": "error"}
+    ],
+    "sla": {"expectedLatencyMinutes": 120, "maxDataDelayMinutes": 240},
+    "ownership": {"owner": "SAP Integration", "contact": "sap-idoc@xpsgroup.co.uk"}
+  }
+]

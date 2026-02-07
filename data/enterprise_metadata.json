@@ -1,0 +1,417 @@
+[
+    {
+        "system_id": "SAP_ECC_PROD",
+        "object_type": "Table",
+        "object_name": "KNA1",
+        "description": "Customer Master",
+        "domain": "Customer",
+        "cdc_enabled": false,
+        "load_strategy": "FULL",
+        "sla_minutes": 60,
+        "owner": "team_customer@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_ECC_PROD",
+        "object_type": "Table",
+        "object_name": "VBAK",
+        "description": "Sales Document: Header Data",
+        "domain": "Sales",
+        "cdc_enabled": true,
+        "load_strategy": "INCREMENTAL",
+        "sla_minutes": 1440,
+        "owner": "team_sales@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_ECC_PROD",
+        "object_type": "Table",
+        "object_name": "VBAP",
+        "description": "Sales Document: Item Data",
+        "domain": "Sales",
+        "cdc_enabled": false,
+        "load_strategy": "FULL",
+        "sla_minutes": 240,
+        "owner": "team_sales@xpsgroup.co.uk",
+        "data_quality_rules": [
+            {
+                "field": "MANDT",
+                "rule": "NOT_NULL"
+            },
+            {
+                "field": "CREATED_AT",
+                "rule": "DATE_FORMAT_ISO"
+            }
+        ],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_ECC_PROD",
+        "object_type": "Table",
+        "object_name": "EKKO",
+        "description": "Purchasing Document Header",
+        "domain": "SupplyChain",
+        "cdc_enabled": false,
+        "load_strategy": "FULL",
+        "sla_minutes": 15,
+        "owner": "team_supplychain@xpsgroup.co.uk",
+        "data_quality_rules": [
+            {
+                "field": "MANDT",
+                "rule": "NOT_NULL"
+            },
+            {
+                "field": "CREATED_AT",
+                "rule": "DATE_FORMAT_ISO"
+            }
+        ],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_ECC_PROD",
+        "object_type": "Table",
+        "object_name": "BKPF",
+        "description": "Accounting Document Header",
+        "domain": "Finance",
+        "cdc_enabled": true,
+        "load_strategy": "INCREMENTAL",
+        "sla_minutes": 15,
+        "owner": "team_finance@xpsgroup.co.uk",
+        "data_quality_rules": [
+            {
+                "field": "MANDT",
+                "rule": "NOT_NULL"
+            },
+            {
+                "field": "CREATED_AT",
+                "rule": "DATE_FORMAT_ISO"
+            }
+        ],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_ECC_PROD",
+        "object_type": "IDoc",
+        "object_name": "DEBMAS",
+        "description": "DEBMAS IDoc Interface",
+        "domain": "Integration",
+        "cdc_enabled": true,
+        "load_strategy": "STREAMING",
+        "sla_minutes": 5,
+        "owner": "integration_center@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_ECC_PROD",
+        "object_type": "IDoc",
+        "object_name": "MATMAS",
+        "description": "MATMAS IDoc Interface",
+        "domain": "Integration",
+        "cdc_enabled": true,
+        "load_strategy": "STREAMING",
+        "sla_minutes": 5,
+        "owner": "integration_center@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_ECC_PROD",
+        "object_type": "IDoc",
+        "object_name": "ORDERS",
+        "description": "ORDERS IDoc Interface",
+        "domain": "Integration",
+        "cdc_enabled": true,
+        "load_strategy": "STREAMING",
+        "sla_minutes": 5,
+        "owner": "integration_center@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_ECC_PROD",
+        "object_type": "IDoc",
+        "object_name": "CREMAS",
+        "description": "CREMAS IDoc Interface",
+        "domain": "Integration",
+        "cdc_enabled": true,
+        "load_strategy": "STREAMING",
+        "sla_minutes": 5,
+        "owner": "integration_center@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_S4HANA_TRIAL",
+        "object_type": "Table",
+        "object_name": "KNA1",
+        "description": "Customer Master",
+        "domain": "Customer",
+        "cdc_enabled": false,
+        "load_strategy": "FULL",
+        "sla_minutes": 15,
+        "owner": "team_customer@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_S4HANA_TRIAL",
+        "object_type": "Table",
+        "object_name": "VBAK",
+        "description": "Sales Document: Header Data",
+        "domain": "Sales",
+        "cdc_enabled": true,
+        "load_strategy": "INCREMENTAL",
+        "sla_minutes": 15,
+        "owner": "team_sales@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_S4HANA_TRIAL",
+        "object_type": "Table",
+        "object_name": "VBAP",
+        "description": "Sales Document: Item Data",
+        "domain": "Sales",
+        "cdc_enabled": false,
+        "load_strategy": "FULL",
+        "sla_minutes": 15,
+        "owner": "team_sales@xpsgroup.co.uk",
+        "data_quality_rules": [
+            {
+                "field": "MANDT",
+                "rule": "NOT_NULL"
+            },
+            {
+                "field": "CREATED_AT",
+                "rule": "DATE_FORMAT_ISO"
+            }
+        ],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_S4HANA_TRIAL",
+        "object_type": "Table",
+        "object_name": "EKKO",
+        "description": "Purchasing Document Header",
+        "domain": "SupplyChain",
+        "cdc_enabled": false,
+        "load_strategy": "FULL",
+        "sla_minutes": 1440,
+        "owner": "team_supplychain@xpsgroup.co.uk",
+        "data_quality_rules": [
+            {
+                "field": "MANDT",
+                "rule": "NOT_NULL"
+            },
+            {
+                "field": "CREATED_AT",
+                "rule": "DATE_FORMAT_ISO"
+            }
+        ],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_S4HANA_TRIAL",
+        "object_type": "Table",
+        "object_name": "BKPF",
+        "description": "Accounting Document Header",
+        "domain": "Finance",
+        "cdc_enabled": true,
+        "load_strategy": "INCREMENTAL",
+        "sla_minutes": 1440,
+        "owner": "team_finance@xpsgroup.co.uk",
+        "data_quality_rules": [
+            {
+                "field": "MANDT",
+                "rule": "NOT_NULL"
+            },
+            {
+                "field": "CREATED_AT",
+                "rule": "DATE_FORMAT_ISO"
+            }
+        ],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_S4HANA_TRIAL",
+        "object_type": "IDoc",
+        "object_name": "DEBMAS",
+        "description": "DEBMAS IDoc Interface",
+        "domain": "Integration",
+        "cdc_enabled": true,
+        "load_strategy": "STREAMING",
+        "sla_minutes": 5,
+        "owner": "integration_center@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_S4HANA_TRIAL",
+        "object_type": "IDoc",
+        "object_name": "MATMAS",
+        "description": "MATMAS IDoc Interface",
+        "domain": "Integration",
+        "cdc_enabled": true,
+        "load_strategy": "STREAMING",
+        "sla_minutes": 5,
+        "owner": "integration_center@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_S4HANA_TRIAL",
+        "object_type": "IDoc",
+        "object_name": "ORDERS",
+        "description": "ORDERS IDoc Interface",
+        "domain": "Integration",
+        "cdc_enabled": true,
+        "load_strategy": "STREAMING",
+        "sla_minutes": 5,
+        "owner": "integration_center@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "SAP_S4HANA_TRIAL",
+        "object_type": "IDoc",
+        "object_name": "CREMAS",
+        "description": "CREMAS IDoc Interface",
+        "domain": "Integration",
+        "cdc_enabled": true,
+        "load_strategy": "STREAMING",
+        "sla_minutes": 5,
+        "owner": "integration_center@xpsgroup.co.uk",
+        "data_quality_rules": [],
+        "dependencies": []
+    },
+    {
+        "system_id": "Salesforce_Global",
+        "object_type": "Object",
+        "object_name": "Account",
+        "description": "Salesforce Account Object",
+        "domain": "Customer",
+        "cdc_enabled": true,
+        "load_strategy": "INCREMENTAL",
+        "sla_minutes": 30,
+        "owner": "crm_team@xpsgroup.co.uk",
+        "data_quality_rules": [
+            {
+                "field": "Id",
+                "rule": "UNIQUE"
+            }
+        ],
+        "dependencies": [
+            {
+                "system": "SAP_ECC",
+                "object": "KNA1"
+            }
+        ]
+    },
+    {
+        "system_id": "Salesforce_Global",
+        "object_type": "Object",
+        "object_name": "Contact",
+        "description": "Salesforce Contact Object",
+        "domain": "Customer",
+        "cdc_enabled": true,
+        "load_strategy": "INCREMENTAL",
+        "sla_minutes": 30,
+        "owner": "crm_team@xpsgroup.co.uk",
+        "data_quality_rules": [
+            {
+                "field": "Id",
+                "rule": "UNIQUE"
+            }
+        ],
+        "dependencies": []
+    },
+    {
+        "system_id": "Salesforce_Global",
+        "object_type": "Object",
+        "object_name": "Opportunity",
+        "description": "Salesforce Opportunity Object",
+        "domain": "Sales",
+        "cdc_enabled": true,
+        "load_strategy": "INCREMENTAL",
+        "sla_minutes": 30,
+        "owner": "crm_team@xpsgroup.co.uk",
+        "data_quality_rules": [
+            {
+                "field": "Id",
+                "rule": "UNIQUE"
+            }
+        ],
+        "dependencies": []
+    },
+    {
+        "system_id": "Salesforce_Global",
+        "object_type": "Object",
+        "object_name": "Lead",
+        "description": "Salesforce Lead Object",
+        "domain": "Sales",
+        "cdc_enabled": true,
+        "load_strategy": "INCREMENTAL",
+        "sla_minutes": 30,
+        "owner": "crm_team@xpsgroup.co.uk",
+        "data_quality_rules": [
+            {
+                "field": "Id",
+                "rule": "UNIQUE"
+            }
+        ],
+        "dependencies": []
+    },
+    {
+        "system_id": "Salesforce_Global",
+        "object_type": "Object",
+        "object_name": "Case",
+        "description": "Salesforce Case Object",
+        "domain": "Customer",
+        "cdc_enabled": true,
+        "load_strategy": "INCREMENTAL",
+        "sla_minutes": 30,
+        "owner": "crm_team@xpsgroup.co.uk",
+        "data_quality_rules": [
+            {
+                "field": "Id",
+                "rule": "UNIQUE"
+            }
+        ],
+        "dependencies": []
+    },
+    {
+        "system_id": "External_API",
+        "object_type": "API_Endpoint",
+        "object_name": "WeatherAPI_/current",
+        "description": "External API: WeatherAPI",
+        "domain": "Operations",
+        "cdc_enabled": false,
+        "load_strategy": "API_POLLING",
+        "sla_minutes": 60,
+        "owner": "digital_team@xpsgroup.co.uk",
+        "connection_details": {
+            "auth_type": "OAuth2",
+            "base_url": "https://api.weatherapi.com/v1"
+        },
+        "dependencies": []
+    },
+    {
+        "system_id": "External_API",
+        "object_type": "API_Endpoint",
+        "object_name": "CurrencyConverter_/rates",
+        "description": "External API: CurrencyConverter",
+        "domain": "Finance",
+        "cdc_enabled": false,
+        "load_strategy": "API_POLLING",
+        "sla_minutes": 60,
+        "owner": "digital_team@xpsgroup.co.uk",
+        "connection_details": {
+            "auth_type": "OAuth2",
+            "base_url": "https://api.currencyconverter.com/v1"
+        },
+        "dependencies": []
+    }
+]

@@ -1,0 +1,21 @@
+{
+  "auditId": "string",
+  "timestamp": "string",
+  "userId": "string",
+  "userRole": "string",
+  "action": "string",
+  "resourceType": "string",
+  "resourceId": "string",
+  "previousVersion": "object|null",
+  "newVersion": "object|null",
+  "aiDecision": {
+    "agent": "string",
+    "input": "object",
+    "output": "object",
+    "explanation": "string"
+  },
+  "explainability": {
+    "rationale": "string",
+    "alternatives": ["string"]
+  }
+}

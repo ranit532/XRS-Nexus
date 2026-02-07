@@ -1,0 +1,32 @@
+{
+  "sourceSystem": {
+    "id": "sf-prod-001",
+    "type": "Salesforce",
+    "name": "Salesforce Production"
+  },
+  "objectType": "api",
+  "objectName": "Account",
+  "schema": [
+    { "columnName": "Id", "dataType": "string", "nullable": false, "description": "Account ID" },
+    { "columnName": "Name", "dataType": "string", "nullable": false, "description": "Account Name" },
+    { "columnName": "CreatedDate", "dataType": "timestamp", "nullable": false, "description": "Created Date" }
+  ],
+  "cdc": {
+    "enabled": true,
+    "method": "version",
+    "field": "SystemModstamp"
+  },
+  "dependencies": [],
+  "lineageHints": [],
+  "dataQualityRules": [
+    { "ruleName": "ValidId", "expression": "Id LIKE '001%'", "severity": "warning" }
+  ],
+  "sla": {
+    "expectedLatencyMinutes": 15,
+    "maxDataDelayMinutes": 30
+  },
+  "ownership": {
+    "owner": "CRM Data Team",
+    "contact": "crm-support@xpsgroup.co.uk"
+  }
+}

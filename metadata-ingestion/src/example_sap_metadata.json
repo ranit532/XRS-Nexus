@@ -1,0 +1,32 @@
+{
+  "sourceSystem": {
+    "id": "sap-erp-001",
+    "type": "SAP",
+    "name": "SAP ERP Central"
+  },
+  "objectType": "table",
+  "objectName": "EKPO",
+  "schema": [
+    { "columnName": "EBELN", "dataType": "string", "nullable": false, "description": "Purchasing Document Number" },
+    { "columnName": "EBELP", "dataType": "integer", "nullable": false, "description": "Item Number" },
+    { "columnName": "MATNR", "dataType": "string", "nullable": true, "description": "Material Number" }
+  ],
+  "cdc": {
+    "enabled": true,
+    "method": "timestamp",
+    "field": "LAST_CHANGED_AT"
+  },
+  "dependencies": ["EKKO"],
+  "lineageHints": ["EKKO.EBELN = EKPO.EBELN"],
+  "dataQualityRules": [
+    { "ruleName": "NotNull_EBELN", "expression": "EBELN IS NOT NULL", "severity": "error" }
+  ],
+  "sla": {
+    "expectedLatencyMinutes": 60,
+    "maxDataDelayMinutes": 120
+  },
+  "ownership": {
+    "owner": "SAP Data Team",
+    "contact": "sap-support@xpsgroup.co.uk"
+  }
+}

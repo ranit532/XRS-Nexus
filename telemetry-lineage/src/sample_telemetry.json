@@ -1,0 +1,16 @@
+{
+  "pipelineId": "pipeline-123",
+  "runId": "run-1707331200000",
+  "stages": {
+    "extract": {"status": "completed", "startTime": 1707331200.0, "endTime": 1707331201.0},
+    "transform": {"status": "completed", "startTime": 1707331201.0, "endTime": 1707331202.0},
+    "load": {"status": "running", "startTime": 1707331202.0, "endTime": null}
+  },
+  "currentStage": "load",
+  "startTime": 1707331200.0,
+  "endTime": null,
+  "slaMinutes": 30,
+  "slaBreached": false,
+  "percentComplete": 66,
+  "estimatedTimeRemaining": 1
+}
