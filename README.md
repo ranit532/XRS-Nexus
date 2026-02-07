@@ -1,8 +1,8 @@
-# XRS NEXUS: Enterprise AI-Driven Integration Platform
+# XPS NEXUS: Enterprise AI-Driven Integration Platform
 
 ## 1. Platform Overview
 
-**XRS NEXUS** is an Azure-native, metadata-driven, AI-orchestrated integration platform for XRS Group UK. It revolutionizes how enterprise data is ingested, processed, and governed by replacing static ETL pipelines with dynamic, AI-generated integration flows.
+**XPS NEXUS** is an Azure-native, metadata-driven, AI-orchestrated integration platform for XPS Group UK. It revolutionizes how enterprise data is ingested, processed, and governed by replacing static ETL pipelines with dynamic, AI-generated integration flows.
 
 The platform ingests metadata from 15+ heterogeneous enterprise systems (SAP, Salesforce, REST APIs, etc.), normalizes it into a canonical model, and uses **Azure AI Foundry + Prompt Flow** to automatically generate and execute ETL/ELT pipelines on **Microsoft Fabric**.
 
@@ -106,16 +106,25 @@ flowchart TD
     Pipeline --> Monitor
 ```
 
-### Runtime Telemetry & Lineage
+### Runtime Telemetry
 ```mermaid
 flowchart TD
     Run[Pipeline Execution] -->|Status Event| Collector[Telemetry Collector]
     Collector -->|Analyze| RTA[Runtime Telemetry Agent]
     RTA -- Risk High --> Alert[SLA Breach Alert]
     RTA -- Normal --> Log[Update Run History]
-    
-    Run -->|Data Mvmt| LA[Lineage Agent]
-    LA -->|Update| Graph[Lineage Graph]
+    Log -->|Persist| Delta[Telemetry Table]
+    Delta --> API[Status API]
+```
+
+### Lineage & Impact Analysis
+```mermaid
+flowchart TD
+    Change[Schema Change Event] --> LA[Lineage Agent]
+    LA -->|Query| Graph[Dependency Graph]
+    Graph -->|Identify| Impact[Impacted Assets]
+    Impact --> Report[Impact Analysis Report]
+    Report --> UI[Admin Dashboard]
 ```
 
 ---
@@ -168,7 +177,7 @@ flowchart TD
 ### Installation
 1.  **Clone Repository:**
     ```bash
-    git clone https://github.com/XRS-group/xrs-nexus.git
+    git clone https://github.com/xps-group/xrs-nexus.git
     cd xrs-nexus
     ```
 2.  **Generate Synthetic Data:**
@@ -187,4 +196,4 @@ flowchart TD
     ```
 
 ### Contact
-For architecture queries, contact **Platform Engineering (platform@XRSgroup.co.uk)**.
+For architecture queries, contact **Platform Engineering (platform@xpsgroup.co.uk)**.
