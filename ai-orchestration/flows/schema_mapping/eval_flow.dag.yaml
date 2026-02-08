@@ -1,0 +1,19 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+inputs:
+  target:
+    type: string
+  prediction:
+    type: string
+outputs:
+  accuracy:
+    type: string
+    reference: ${evaluator.output}
+nodes:
+- name: evaluator
+  type: python
+  source:
+    type: code
+    path: eval_accuracy.py
+  inputs:
+    ground_truth: ${inputs.target}
+    prediction: ${inputs.prediction}

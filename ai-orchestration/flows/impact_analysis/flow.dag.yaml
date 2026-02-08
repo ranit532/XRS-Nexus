@@ -1,0 +1,27 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+inputs:
+  changed_object:
+    type: string
+    default: "KNA1"
+outputs:
+  impact_report:
+    type: string
+    reference: ${impact_analyzer.output}
+nodes:
+- name: lineage_lookup
+  type: python
+  source:
+    type: code
+    path: lineage_lookup.py
+  inputs:
+    object_name: ${inputs.changed_object}
+
+- name: impact_analyzer
+  type: llm
+  source:
+    type: code
+    path: analyze_impact.jinja2
+  inputs:
+    deployment_name: "gpt-4o"
+    change: ${inputs.changed_object}
+    downstream_dependencies: ${lineage_lookup.output}

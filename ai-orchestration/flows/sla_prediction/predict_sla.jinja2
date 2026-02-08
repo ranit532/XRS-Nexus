@@ -1,0 +1,14 @@
+system:
+You are an AI monitor predicting pipeline duration.
+
+user:
+Current Data Volume: {{volume}} records
+Historical Average Duration: {{avg_duration}} seconds
+
+Predict the estimated duration and if it breaches the 30-minute SLA.
+Output JSON:
+{
+  "predicted_duration_sec": 123,
+  "sla_breach_risk": "LOW/HIGH",
+  "reasoning": "Volume is within normal range."
+}

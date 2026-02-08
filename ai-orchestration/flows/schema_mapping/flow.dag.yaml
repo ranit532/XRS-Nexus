@@ -1,0 +1,34 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+environment:
+  python_requirements_txt: requirements.txt
+inputs:
+  source_field:
+    type: string
+    default: "KUNNR"
+  target_schema:
+    type: string
+    default: "Customer(CustomerID, Name, Address)"
+outputs:
+  mapping:
+    type: string
+    reference: ${llm_mapper.output}
+nodes:
+- name: rag_lookup
+  type: python
+  source:
+    type: code
+    path: rag_lookup.py
+  inputs:
+    query: ${inputs.source_field}
+    
+- name: llm_mapper
+  type: llm
+  source:
+    type: code
+    path: map_field.jinja2
+  inputs:
+    deployment_name: "gpt-4o"
+    temperature: 0.2
+    source_field: ${inputs.source_field}
+    context: ${rag_lookup.output}
+    target_schema: ${inputs.target_schema}

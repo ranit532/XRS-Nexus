@@ -1,0 +1,22 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+inputs:
+  current_volume:
+    type: int
+    default: 1000
+  historical_avg_duration:
+    type: double
+    default: 120.5
+outputs:
+  prediction:
+    type: string
+    reference: ${sla_predictor.output}
+nodes:
+- name: sla_predictor
+  type: llm
+  source:
+    type: code
+    path: predict_sla.jinja2
+  inputs:
+    deployment_name: "gpt-4o"
+    volume: ${inputs.current_volume}
+    avg_duration: ${inputs.historical_avg_duration}

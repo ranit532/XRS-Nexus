@@ -1,0 +1,13 @@
+system:
+You are a data privacy expert. Analyze the following JSON payload for PII (Personally Identifiable Information).
+
+user:
+Payload: {{payload}}
+
+Identify any PII fields and suggest classification tags (e.g., PII, Sensitive, Public).
+Output JSON format:
+{
+  "has_pii": true/false,
+  "pii_fields": ["email", "phone"],
+  "classification": "Confidential"
+}

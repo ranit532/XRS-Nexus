@@ -1,0 +1,18 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+inputs:
+  payload_sample:
+    type: string
+    default: "{\"email\": \"john@example.com\", \"id\": 123}"
+outputs:
+  pii_report:
+    type: string
+    reference: ${pii_analyzer.output}
+nodes:
+- name: pii_analyzer
+  type: llm
+  source:
+    type: code
+    path: pii_analyze.jinja2
+  inputs:
+    deployment_name: "gpt-4o"
+    payload: ${inputs.payload_sample}

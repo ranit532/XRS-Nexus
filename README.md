@@ -4,199 +4,144 @@
 
 **XPS NEXUS** is an Azure-native, metadata-driven, AI-orchestrated integration platform for XPS Group UK. It revolutionizes how enterprise data is ingested, processed, and governed by replacing static ETL pipelines with dynamic, AI-generated integration flows.
 
-The platform ingests metadata from 15+ heterogeneous enterprise systems (SAP, Salesforce, REST APIs, etc.), normalizes it into a canonical model, and uses **Azure AI Foundry + Prompt Flow** to automatically generate and execute ETL/ELT pipelines on **Microsoft Fabric**.
-
-**Key Differentiators:**
-- **Zero-Code Integration:** Pipelines are generated at runtime by AI agents based on metadata and SLAs.
-- **Multi-Agent Orchestration:** Specialized agents for Metadata Intelligence, Flow Generation, and Telemetry.
-- **Fabric-Native:** Leverages OneLake (Bronze/Silver/Gold) and Spark for high-performance processing.
-- **End-to-End Observability:** Real-time SLA tracking, lineage, and impact analysis.
+The platform ingests metadata from 15+ heterogeneous enterprise systems (SAP, Salesforce, REST APIs, etc.), normalizes it into a canonical model, and uses **Azure AI Foundry (Prompt Flow + RAG)** to automatically generate and execute ETL/ELT pipelines on **Microsoft Fabric**.
 
 ---
 
-## 2. Azure Services Used
+## 2. Key Features & AI Capabilities
 
-| Service | Purpose | Integration Points | Runtime Role |
-|---------|---------|-------------------|--------------|
-| **Azure AI Foundry / Prompt Flow** | Orchestrates AI agents and logic generation. | Python SDK, OpenAI Models | **Brain:** Decides *how* to integrate data. |
-| **Microsoft Fabric Lakehouse** | Centralized storage (OneLake) for data & metadata. | Delta Tables, Spark | **Storage:** System of Record (Bronze/Silver/Gold). |
-| **Fabric Spark** | Distributed compute for heavy transformations. | Job Definitions, Notebooks | **Compute:** Executes complex data flows. |
-| **Fabric Pipelines** | Orchestration of activities and copy jobs. | Pipeline JSON | **Orchestrator:** Manages execution sequencing. |
-| **Azure Data Factory** | Legacy system integration (where needed). | IR, Connectors | **Connector:** Bridges on-prem/legacy gaps. |
-| **Azure Functions** | API & Control Plane (Python). | HTTP Triggers | **API:** Exposes status/metrics to UI. |
-| **Azure Application Insights** | Observability and distributed tracing. | Python Logger | **Observer:** Logs metrics & traces. |
-| **Microsoft Entra ID** | Identity and Access Management. | App Registration | **Security:** RBAC & AuthZ. |
+### 🧠 Core AI Brain (Azure AI Foundry)
+We leverage **Azure AI Foundry** to orchestrate intelligent workflows using **Prompt Flow** and **GPT-4o**.
 
----
-
-## 3. End-to-End Execution Flow
-
-**Source → Metadata → AI Agents → Fabric → Telemetry → UI**
-
-1.  **Metadata Ingestion:** The platform ingests technical and business metadata from sources (e.g., SAP tables, Salesforce objects).
-2.  **AI Intelligence:** The **Metadata Intelligence Agent** normalizes this metadata, detecting system types and PII.
-3.  **Flow Generation:** The **Logical Flow Generator Agent** creates a technology-agnostic integration plan (Extract -> Cleanse -> Load).
-4.  **Pipeline Construction:** The **Pipeline Builder** converts the logical flow into a physical **Fabric Spark Job** or **ADF Pipeline**.
-5.  **Execution & Telemetry:** The pipeline processes data while the **Runtime Telemetry Agent** monitors progress against SLAs.
-6.  **Lineage & Impact:** The **Lineage Agent** updates the dependency graph for impact analysis.
-7.  **UI Visualization:** Status APIs serve real-time metrics to the operations dashboard.
+| Feature | Description | AI Technology |
+|---------|-------------|---------------|
+| **Intelligent Schema Mapping** | Auto-maps source fields to target schemas using historical patterns. | **RAG (Azure AI Search)** + Prompt Flow |
+| **PII Detection & Governance** | Scans data payloads to identify and tag Sensitive/Confidential info. | **Prompty** + GPT-4o |
+| **Automated Error Resolution** | Analyzes stack traces and error logs to suggest root causes and fixes. | Prompt Flow + **Self-Correction** |
+| **SLA Breach Prediction** | Predicts pipeline runtime based on volume and historical telemetry. | Predictive AI (LLM-based) |
+| **Natural Language to SQL** | Converts business questions ("Total sales in UK") into SparkSQL. | **NL2SQL** Prompt Flow |
+| **Impact Analysis** | Generates human-readable reports on downstream impact of schema changes. | Lineage Graph + GenAI Summarization |
 
 ---
 
-## 4. Architecture Diagrams
+## 3. Architecture Diagrams
 
-### Overall Architecture
+### Overall AI Architecture
 ```mermaid
 flowchart TD
-    Sources[Enterprise Sources\n(SAP, Salesforce, APIs)] -->|Metadata| Ingest[Metadata Ingestion]
-    Ingest -->|Normalized JSON| AI[AI Orchestration\n(Prompt Flow)]
+    Metadata[Metadata Source] -->|Ingest| RAG[RAG System\n(Azure AI Search)]
     
-    subgraph "AI Brain"
-        AI -->|Analyze| MIA[Metadata Intelligence Agent]
-        MIA -->|Plan| LFA[Logical Flow Generator]
-        LFA -->|Optimize| ESA[ETL Strategy Agent]
+    subgraph "Azure AI Foundry"
+        Orchestrator[Prompt Flow Orchestrator]
+        
+        RAG -->|Context| Orchestrator
+        User[User Request] -->|Prompt| Orchestrator
+        
+        Orchestrator -->|Flow 1| Mapping[Schema Mapping]
+        Orchestrator -->|Flow 2| PII[PII Detection]
+        Orchestrator -->|Flow 3| SQL[NL2SQL Gen]
+        
+        Mapping -->|JSON| Fabric
+        SQL -->|Query| Fabric
     end
     
-    ESA -->|Definition| Build[Pipeline Builder]
-    Build -->|Submit| Fabric[Microsoft Fabric]
-    
-    subgraph "Data Plane"
-        Fabric -->|Spark/Copy| Bronze[(Bronze Lake)]
-        Bronze -->|Transform| Silver[(Silver Lake)]
-        Silver -->|Agg| Gold[(Gold Lake)]
+    subgraph "Data Plane (Fabric/Synapse)"
+        Fabric[Microsoft Fabric]
+        Fabric -->|Bronze| Bronze[(Bronze Lake)]
+        Fabric -->|Silver| Silver[(Silver Lake)]
+        Fabric -->|Gold| Gold[(Gold Lake)]
     end
-    
-    Fabric -->|Logs| Telemetry[Runtime Telemetry]
-    Telemetry -->|Metrics| API[Status API (Azure Func)]
-    API -->|JSON| UI[Ops Dashboard]
 ```
 
-### Metadata Ingestion Flow
+### RAG & Design Pattern
+We use a **Retrieval-Augmented Generation (RAG)** pattern to ground the AI model with specific enterprise context.
+
+1.  **Ingestion**: Documentation and Metadata are chunked and indexed in **Azure AI Search**.
+2.  **Retrieval**: When a mapping request comes in, we retrieve "similar past mappings" from the Vector Store.
+3.  **Generation**: GPT-4o uses this context to propose a highly accurate mapping.
+
 ```mermaid
 sequenceDiagram
-    participant Source
-    participant Ingest as Metadata Ingestion
-    participant Lake as Fabric Lakehouse
-    Source->>Ingest: Send Schema/DDL
-    Ingest->>Ingest: Normalize & Validate
-    Ingest->>Lake: Store in Metadata Delta Table
-```
-
-### AI Multi-Agent Orchestration
-```mermaid
-flowchart LR
-    Input[Raw Metadata] --> MIA[Metadata Intelligence]
-    MIA -->|Enriched Meta| LFA[Logical Flow Generator]
-    LFA -->|Logical Flow| ESA[ETL Strategy Agent]
-    ESA -->|Execution Plan| Output[Pipeline Definition]
+    participant User
+    participant Flow as Prompt Flow
+    participant Search as Azure AI Search
+    participant LLM as GPT-4o
     
-    ESA -.->|Context| RTA[Runtime Telemetry]
-    ESA -.->|Graph| LA[Lineage Agent]
-```
-
-### Dynamic ETL Execution
-```mermaid
-flowchart TD
-    Trigger[Schedule/Event] --> GetMeta[Fetch Metadata]
-    GetMeta --> Generate[AI Generate Pipeline]
-    Generate --> Decider{Strategy?}
-    Decider -->|Complex| Spark[Fabric Spark Job]
-    Decider -->|Simple| Pipeline[Fabric Pipeline Copy]
-    Spark --> Monitor[Telemetry Agent]
-    Pipeline --> Monitor
-```
-
-### Runtime Telemetry
-```mermaid
-flowchart TD
-    Run[Pipeline Execution] -->|Status Event| Collector[Telemetry Collector]
-    Collector -->|Analyze| RTA[Runtime Telemetry Agent]
-    RTA -- Risk High --> Alert[SLA Breach Alert]
-    RTA -- Normal --> Log[Update Run History]
-    Log -->|Persist| Delta[Telemetry Table]
-    Delta --> API[Status API]
-```
-
-### Lineage & Impact Analysis
-```mermaid
-flowchart TD
-    Change[Schema Change Event] --> LA[Lineage Agent]
-    LA -->|Query| Graph[Dependency Graph]
-    Graph -->|Identify| Impact[Impacted Assets]
-    Impact --> Report[Impact Analysis Report]
-    Report --> UI[Admin Dashboard]
+    User->>Flow: "Map 'KUNNR' to Target"
+    Flow->>Search: Vector Search("KUNNR")
+    Search-->>Flow: "Similar: KUNNR -> CustomerID"
+    Flow->>LLM: Prompt + Context
+    LLM-->>Flow: "Result: CustomerID (99% Conf)"
+    Flow-->>User: Mapping JSON
 ```
 
 ---
 
-## 5. SAP CDC Example Walkthrough
+## 4. Beginner's Guide: How It Works Under the Hood
 
-**Scenario:** Ingesting `EKKO` (Purchasing Header) from SAP ECC with Change Data Capture (CDC).
+### Step 1: Metadata Ingestion
+The system scans your sources (SAP, Salesforce) and generates a standardized JSON metadata file.
+*   **Script**: `synthetic-dataset/generate_metadata.py`
+*   **Output**: `data/metadata_samples.json`
 
-1.  **Metadata Ingestion:**
-    *   System detects `EKKO` table.
-    *   Flags `CDC_Enabled = True`.
-    *   SLA = 30 mins.
+### Step 2: Vector Indexing
+This metadata is "embedded" (converted to vectors) and stored in **Azure AI Search** so the AI can "remember" it.
+*   **Script**: `ai-orchestration/rag/indexer.py`
 
-2.  **Logical Flow Generation:**
-    *   **Agent Decision:** Use Incremental Load pattern.
-    *   **Steps:**
-        1.  Extract (SAP Connector, CDC Mode).
-        2.  Transform (Cast types, Standardize dates).
-        3.  Merge (Upsert into Silver Lakehouse based on Primary Key).
+### Step 3: Prompt Flow Execution
+When a Data Engineer creates a new pipeline, **Prompt Flow** runs a DAG (Directed Acyclic Graph) of AI tasks.
+*   **Location**: `ai-orchestration/flows/`
+*   **Example**: `schema_mapping/flow.dag.yaml`
 
-3.  **Pipeline Execution:**
-    *   **Strategy Agent:** Selects **Fabric Spark** due to complex Merge requirement.
-    *   **Builder:** Generates Spark definition with `spark.read.format("sap_cdc")` and `deltaTable.alias("t").merge(...)`.
-
-4.  **Progress Calculation:**
-    *   Telemetry Agent sees "Extract" took 5 mins.
-    *   Predicts total time: 15 mins.
-    *   **SLA Risk:** LOW (15 < 30).
-
-5.  **UI JSON Output:**
-    ```json
-    {
-      "run_id": "run_sap_ekko_001",
-      "status": "RUNNING",
-      "stage": "MERGE",
-      "progress": 75,
-      "sla_risk": "LOW"
-    }
-    ```
+### Step 4: Data Processing
+The generated logic is executed on **Microsoft Fabric** (Spark) to move data from Bronze -> Silver -> Gold.
+*   **Scripts**: `etl-execution/spark_jobs/`
 
 ---
 
-## 6. Getting Started
+## 5. Getting Started
 
 ### Prerequisites
-*   Azure Subscription with AI Foundry and Fabric enabled.
+*   Azure Subscription (AI Studio, OpenAI, Search).
 *   Python 3.10+.
-*   Azure CLI.
+*   Terraform (for Infra).
 
-### Installation
-1.  **Clone Repository:**
+### Installation & Setup
+
+1.  **Infrastructure Deployment**
+    Deploy the full Azure AI & Data stack using Terraform.
     ```bash
-    git clone https://github.com/xps-group/xrs-nexus.git
-    cd xrs-nexus
-    ```
-2.  **Generate Synthetic Data:**
-    ```bash
-    python synthetic-dataset/generate_metadata.py
-    ```
-3.  **Deploy AI Agents:**
-    Ensure `promptflow` is installed and run tests:
-    ```bash
-    python ai-orchestration/metadata_intelligence.py
-    ```
-4.  **Deploy API:**
-    ```bash
-    cd api-layer
-    func start
+    cd infra
+    terraform init
+    terraform apply
     ```
 
-### Contact
-For architecture queries, contact **Platform Engineering (platform@xpsgroup.co.uk)**.
+2.  **Generate Data**
+    Create synthetic datasets to simulate a production environment (1000+ records).
+    ```bash
+    python3 synthetic-dataset/generate_metadata.py
+    python3 synthetic-dataset/generate_telemetry.py
+    ```
 
-## Version History
-- **v1.0.0**: Initial release with Synthetic Data, AI Agents, and Fabric integration.
+3.  **Run AI Flows**
+    You can run prompt flows locally using the `pf` CLI (requires `promptflow` package).
+    ```bash
+    # Install dependencies
+    pip install promptflow promptflow-tools azure-search-documents azure-ai-ml
+
+    # Run Schema Mapping Flow
+    pf flow test --flow ai-orchestration/flows/schema_mapping --inputs source_field="KUNNR"
+    ```
+
+---
+
+## 6. Project Structure
+
+*   `/ai-orchestration`: Core AI logic.
+    *   `/flows`: Prompt Flow definitions (DAGs).
+    *   `/prompty`: Prompty assets.
+    *   `/rag`: Indexing scripts.
+*   `/infra`: Terraform code for Azure resources.
+*   `/etl-execution`: Spark/Python data processing jobs.
+*   `/synthetic-dataset`: Data generation scripts.
+*   `/data`: Local storage for generated datasets.

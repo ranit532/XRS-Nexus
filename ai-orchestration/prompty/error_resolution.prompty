@@ -1,0 +1,31 @@
+---
+name: ErrorResolution
+description: Analyze error logs and suggest fixes.
+model:
+  api: chat
+  configuration:
+    type: azure_openai
+    azure_deployment: gpt-4o
+  parameters:
+    temperature: 0.2
+    max_tokens: 500
+inputs:
+  error_log:
+    type: string
+  stack_trace:
+    type: string
+sample:
+  error_log: "ConnectionTimeout: SAP Gateway not reachable"
+  stack_trace: "File 'connector.py', line 42"
+---
+system:
+You are an expert DevOps engineer. Analyze the following error and suggest a root cause and resolution.
+
+user:
+Error: {{error_log}}
+Stack Trace: {{stack_trace}}
+
+Output format:
+- Root Cause: ...
+- Suggested Fix: ...
+- Severity: High/Medium/Low
