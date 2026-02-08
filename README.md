@@ -24,133 +24,161 @@ We leverage **Azure AI Foundry** to orchestrate intelligent workflows using **Pr
 
 ---
 
-## 3. Architecture Diagrams
+## 3. Technology Stack & Architecture
 
-### Overall AI Architecture
-### Technologies
-![Azure](https://img.shields.io/badge/azure-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)
-![Azure AI](https://img.shields.io/badge/Azure%20AI-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)
-![ChatGPT](https://img.shields.io/badge/chatGPT-74aa9c?style=for-the-badge&logo=openai&logoColor=white)
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
-![Microsoft Fabric](https://img.shields.io/badge/Microsoft%20Fabric-0078D4?style=for-the-badge&logo=microsoft&logoColor=white)
+### Core Azure Services
+| Service | Logo | Role |
+|:--------|:----:|:-----|
+| **Azure AI Foundry** | <img src="https://learn.microsoft.com/en-us/azure/ai-studio/media/index/azure-ai-studio-icon.svg" width="50" /> | Unified platform for building and managing AI solutions (Hub & Projects). |
+| **Azure OpenAI** | <img src="https://learn.microsoft.com/en-us/azure/ai-services/media/index/openai-icon.svg" width="50" /> | Provides LLM models (GPT-4o) and Embeddings for intelligence. |
+| **Azure AI Search** | <img src="https://learn.microsoft.com/en-us/azure/search/media/index/search-icon.svg" width="50" /> | Vector Store and Retrieval engine for RAG (Schema Mapping). |
+| **Prompt Flow** | <img src="https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/media/index/prompt-flow-logo.svg" width="50" /> | Orchestration tool for linking LLMs, Python code, and data tools. |
+| **Microsoft Fabric** | <img src="https://learn.microsoft.com/en-us/fabric/media/index/fabric-icon.svg" width="50" /> | Unified data platform for Lakehouse storage and Spark compute. |
+| **Terraform** | <img src="https://raw.githubusercontent.com/hashicorp/terraform/master/website/img/logo.svg" width="50" /> | Infrastructure as Code (IaC) for reproducible deployments. |
 
-### Overall AI Architecture
+### End-to-End Workflow
+The platform operates in a continuous loop of **Listen -> Think -> Act**.
+
+1.  **Ingest (Listen)**:
+    *   Metadata is ingested from SAP/Salesforce into the **Bronze Lakehouse**.
+    *   The **Metadata Intelligence Agent** scans this for new schema definitions.
+2.  **Orchestrate (Think)**:
+    *   **Prompt Flow** triggers a RAG lookup in **Azure AI Search** to find historical mapping patterns.
+    *   **GPT-4o** analyzes the new fields and suggests a normalized schema.
+    *   **Prompty** scans sample data for PII and tags it for governance.
+3.  **Execute (Act)**:
+    *   A dynamic **Spark Job** is generated and submitted to **Microsoft Fabric**.
+    *   Data flows from Bronze -> Silver -> Gold tiers.
+4.  **Monitor (Observe)**:
+    *   Telemetry is logged to **Application Insights**.
+    *   **SLA Agent** predicts completion times and alerts on breach risks.
+
+### Architecture Diagram
 ```mermaid
 flowchart TD
-    Metadata[Metadata Source] -->|Ingest| RAG["RAG System<br>(Azure AI Search)"]
-    
-    subgraph "Azure AI Foundry"
-        Orchestrator[Prompt Flow Orchestrator]
+    subgraph "Ingestion Layer"
+        SAP[SAP ECC] -->|Metadata| Bronze[(Bronze Lake)]
+        SFDC[Salesforce] -->|Metadata| Bronze
+    end
+
+    subgraph "AI Brain (Azure AI Foundry)"
+        direction TB
+        Search[Azure AI Search\n(Vector Store)]
+        OpenAI[Azure OpenAI\n(GPT-4o)]
+        Flow[Prompt Flow Orchestrator]
         
-        RAG -->|Context| Orchestrator
-        User[User Request] -->|Prompt| Orchestrator
-        
-        Orchestrator -->|Flow 1| Mapping[Schema Mapping]
-        Orchestrator -->|Flow 2| PII[PII Detection]
-        Orchestrator -->|Flow 3| SQL[NL2SQL Gen]
-        
-        Mapping -->|JSON| Fabric
-        SQL -->|Query| Fabric
+        Bronze -->|Trigger| Flow
+        Flow -->|Retrieval| Search
+        Flow -->|Generation| OpenAI
     end
     
-    subgraph "Data Plane (Fabric/Synapse)"
-        Fabric[Microsoft Fabric]
-        Fabric -->|Bronze| Bronze[(Bronze Lake)]
-        Fabric -->|Silver| Silver[(Silver Lake)]
-        Fabric -->|Gold| Gold[(Gold Lake)]
+    subgraph "Execution Layer (Microsoft Fabric)"
+        Flow -->|Submit Job| Spark[Fabric Spark]
+        Spark -->|Transform| Silver[(Silver Lake)]
+        Spark -->|Agg| Gold[(Gold Lake)]
     end
-```
-
-### RAG & Design Pattern
-We use a **Retrieval-Augmented Generation (RAG)** pattern to ground the AI model with specific enterprise context.
-
-1.  **Ingestion**: Documentation and Metadata are chunked and indexed in **Azure AI Search**.
-2.  **Retrieval**: When a mapping request comes in, we retrieve "similar past mappings" from the Vector Store.
-3.  **Generation**: GPT-4o uses this context to propose a highly accurate mapping.
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Flow as Prompt Flow
-    participant Search as Azure AI Search
-    participant LLM as GPT-4o
     
-    User->>Flow: "Map 'KUNNR' to Target"
-    Flow->>Search: Vector Search("KUNNR")
-    Search-->>Flow: "Similar: KUNNR -> CustomerID"
-    Flow->>LLM: Prompt + Context
-    LLM-->>Flow: "Result: CustomerID (99% Conf)"
-    Flow-->>User: Mapping JSON
+    Spark -->|Logs| Telemetry[App Insights]
 ```
 
 ---
 
-## 4. Beginner's Guide: How It Works Under the Hood
+## 4. Comprehensive Deployment Guide
 
-### Step 1: Metadata Ingestion
-The system scans your sources (SAP, Salesforce) and generates a standardized JSON metadata file.
-*   **Script**: `synthetic-dataset/generate_metadata.py`
-*   **Output**: `data/metadata_samples.json`
+Follow these steps to deploy the platform from scratch.
 
-### Step 2: Vector Indexing
-This metadata is "embedded" (converted to vectors) and stored in **Azure AI Search** so the AI can "remember" it.
-*   **Script**: `ai-orchestration/rag/indexer.py`
+### Step 1: Clone & Configure
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/xps-group/xrs-nexus.git
+    cd xrs-nexus
+    ```
+2.  Set up environment variables in a `.env` file (template provided below):
+    ```ini
+    AZURE_OPENAI_API_KEY=your_key
+    AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
+    AZURE_SEARCH_KEY=your_key
+    AZURE_SEARCH_ENDPOINT=https://your-resource.search.windows.net/
+    ```
 
-### Step 3: Prompt Flow Execution
-When a Data Engineer creates a new pipeline, **Prompt Flow** runs a DAG (Directed Acyclic Graph) of AI tasks.
-*   **Location**: `ai-orchestration/flows/`
-*   **Example**: `schema_mapping/flow.dag.yaml`
-
-### Step 4: Data Processing
-The generated logic is executed on **Microsoft Fabric** (Spark) to move data from Bronze -> Silver -> Gold.
-*   **Scripts**: `etl-execution/spark_jobs/`
-
----
-
-## 5. Getting Started
-
-### Prerequisites
-*   Azure Subscription (AI Studio, OpenAI, Search).
-*   Python 3.10+.
-*   Terraform (for Infra).
-
-### Installation & Setup
-
-1.  **Infrastructure Deployment**
-    Deploy the full Azure AI & Data stack using Terraform.
+### Step 2: Infrastructure Provisioning (Terraform)
+We use Terraform to stand up the Azure AI and Data resources.
+1.  Navigate to the infra directory:
     ```bash
     cd infra
-    terraform init
-    terraform apply
     ```
+2.  Initialize Terraform:
+    ```bash
+    terraform init
+    ```
+3.  Plan and Apply:
+    ```bash
+    terraform plan -out main.tfplan
+    terraform apply main.tfplan
+    ```
+    *This creates the AI Hub, Project, Search Service, and Storage Accounts.*
 
-2.  **Generate Data**
-    Create synthetic datasets to simulate a production environment (1000+ records).
+### Step 3: Data Generation (Simulation)
+Generate synthetic data to simulate a production workload for testing.
+1.  Generate Metadata (Simulates SAP/Salesforce schemas):
     ```bash
     python3 synthetic-dataset/generate_metadata.py
+    # Output: data/metadata_samples.json (1000+ records)
+    ```
+2.  Generate Telemetry (Simulates execution logs):
+    ```bash
     python3 synthetic-dataset/generate_telemetry.py
+    # Output: data/telemetry_logs.json (1000+ records)
     ```
 
-3.  **Run AI Flows**
-    You can run prompt flows locally using the `pf` CLI (requires `promptflow` package).
+### Step 4: RAG System Setup
+Index the generated metadata into Azure AI Search to enable the "Intelligent Mapping" capability.
+1.  Run the indexer script:
     ```bash
-    # Install dependencies
-    pip install promptflow promptflow-tools azure-search-documents azure-ai-ml
+    python3 ai-orchestration/rag/indexer.py
+    ```
+    *This chunks the metadata descriptions, creates embeddings using OpenAI, and pushes them to the Vector Store.*
 
-    # Run Schema Mapping Flow
+### Step 5: Executing AI Workflows
+Now you can run the actual Prompt Flows.
+1.  **Schema Mapping Flow**:
+    ```bash
+    # Test mapping a field 'KUNNR' (German for Customer Number in SAP)
     pf flow test --flow ai-orchestration/flows/schema_mapping --inputs source_field="KUNNR"
+    ```
+2.  **NL2SQL Flow**:
+    ```bash
+    # Test converting a question to SQL
+    pf flow test --flow ai-orchestration/flows/nl2sql --inputs user_question="Show total revenue for UK"
+    ```
+
+### Step 6: Data Processing (Fabric/Spark Simulation)
+Execute the Python scripts that simulate the Fabric Spark jobs.
+1.  Process Bronze Layer (Ingestion):
+    ```bash
+    python3 etl-execution/spark_jobs/process_bronze.py
+    ```
+2.  Process Silver Layer (Transformation):
+    ```bash
+    python3 etl-execution/spark_jobs/process_silver.py
+    ```
+
+### Step 7: API Deployment
+Deploy the Azure Function to expose the platform APIs.
+1.  Navigate to the API folder:
+    ```bash
+    cd api-layer
+    ```
+2.  Start locally:
+    ```bash
+    func start
     ```
 
 ---
 
-## 6. Project Structure
+## 5. Project Structure Reference
 
-*   `/ai-orchestration`: Core AI logic.
-    *   `/flows`: Prompt Flow definitions (DAGs).
-    *   `/prompty`: Prompty assets.
-    *   `/rag`: Indexing scripts.
-*   `/infra`: Terraform code for Azure resources.
-*   `/etl-execution`: Spark/Python data processing jobs.
-*   `/synthetic-dataset`: Data generation scripts.
-*   `/data`: Local storage for generated datasets.
+*   **`/ai-orchestration`**: The "Brain". Contains Prompt Flows, RAG scripts, and Prompty files.
+*   **`/infra`**: The "Body". Terraform code to build the Azure environment.
+*   **`/synthetic-dataset`**: The "Fuel". Scripts to generate large-scale test data.
+*   **`/etl-execution`**: The "Muscle". Spark scripts that effectively transform the data.
