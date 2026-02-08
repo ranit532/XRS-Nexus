@@ -1,8 +1,8 @@
-# XPS NEXUS: Enterprise AI-Driven Integration Platform
+# XRS NEXUS: Enterprise AI-Driven Integration Platform
 
 ## 1. Platform Overview
 
-**XPS NEXUS** is an Azure-native, metadata-driven, AI-orchestrated integration platform for XPS Group UK. It revolutionizes how enterprise data is ingested, processed, and governed by replacing static ETL pipelines with dynamic, AI-generated integration flows.
+**XRS NEXUS** is an Azure-native, metadata-driven, AI-orchestrated integration platform for XRS Group UK. It revolutionizes how enterprise data is ingested, processed, and governed by replacing static ETL pipelines with dynamic, AI-generated integration flows.
 
 The platform ingests metadata from 15+ heterogeneous enterprise systems (SAP, Salesforce, REST APIs, etc.), normalizes it into a canonical model, and uses **Azure AI Foundry (Prompt Flow + RAG)** to automatically generate and execute ETL/ELT pipelines on **Microsoft Fabric**.
 
@@ -27,9 +27,18 @@ We leverage **Azure AI Foundry** to orchestrate intelligent workflows using **Pr
 ## 3. Architecture Diagrams
 
 ### Overall AI Architecture
+### Technologies
+![Azure](https://img.shields.io/badge/azure-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)
+![Azure AI](https://img.shields.io/badge/Azure%20AI-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)
+![ChatGPT](https://img.shields.io/badge/chatGPT-74aa9c?style=for-the-badge&logo=openai&logoColor=white)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
+![Microsoft Fabric](https://img.shields.io/badge/Microsoft%20Fabric-0078D4?style=for-the-badge&logo=microsoft&logoColor=white)
+
+### Overall AI Architecture
 ```mermaid
 flowchart TD
-    Metadata[Metadata Source] -->|Ingest| RAG[RAG System\n(Azure AI Search)]
+    Metadata[Metadata Source] -->|Ingest| RAG["RAG System<br>(Azure AI Search)"]
     
     subgraph "Azure AI Foundry"
         Orchestrator[Prompt Flow Orchestrator]
