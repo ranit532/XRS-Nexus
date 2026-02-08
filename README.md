@@ -27,14 +27,14 @@ We leverage **Azure AI Foundry** to orchestrate intelligent workflows using **Pr
 ## 3. Technology Stack & Architecture
 
 ### Core Azure Services
-| Service | Logo | Role |
-|:--------|:----:|:-----|
-| **Azure AI Foundry** | <img src="https://learn.microsoft.com/en-us/azure/ai-studio/media/index/azure-ai-studio-icon.svg" width="50" /> | Unified platform for building and managing AI solutions (Hub & Projects). |
-| **Azure OpenAI** | <img src="https://learn.microsoft.com/en-us/azure/ai-services/media/index/openai-icon.svg" width="50" /> | Provides LLM models (GPT-4o) and Embeddings for intelligence. |
-| **Azure AI Search** | <img src="https://learn.microsoft.com/en-us/azure/search/media/index/search-icon.svg" width="50" /> | Vector Store and Retrieval engine for RAG (Schema Mapping). |
-| **Prompt Flow** | <img src="https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/media/index/prompt-flow-logo.svg" width="50" /> | Orchestration tool for linking LLMs, Python code, and data tools. |
-| **Microsoft Fabric** | <img src="https://learn.microsoft.com/en-us/fabric/media/index/fabric-icon.svg" width="50" /> | Unified data platform for Lakehouse storage and Spark compute. |
-| **Terraform** | <img src="https://raw.githubusercontent.com/hashicorp/terraform/master/website/img/logo.svg" width="50" /> | Infrastructure as Code (IaC) for reproducible deployments. |
+| Service | Role |
+|:--------|:-----|
+| **Azure AI Foundry** | Unified platform for building and managing AI solutions (Hub & Projects). |
+| **Azure OpenAI** | Provides LLM models (GPT-4o) and Embeddings for intelligence. |
+| **Azure AI Search** | Vector Store and Retrieval engine for RAG (Schema Mapping). |
+| **Prompt Flow** | Orchestration tool for linking LLMs, Python code, and data tools. |
+| **Microsoft Fabric** | Unified data platform for Lakehouse storage and Spark compute. |
+| **Terraform** | Infrastructure as Code (IaC) for reproducible deployments. |
 
 ### End-to-End Workflow
 The platform operates in a continuous loop of **Listen -> Think -> Act**.
@@ -63,8 +63,8 @@ flowchart TD
 
     subgraph "AI Brain (Azure AI Foundry)"
         direction TB
-        Search[Azure AI Search\n(Vector Store)]
-        OpenAI[Azure OpenAI\n(GPT-4o)]
+        Search["Azure AI Search<br>(Vector Store)"]
+        OpenAI["Azure OpenAI<br>(GPT-4o)"]
         Flow[Prompt Flow Orchestrator]
         
         Bronze -->|Trigger| Flow
