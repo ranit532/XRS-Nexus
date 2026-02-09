@@ -42,3 +42,6 @@ metastore_db/
 synthetic-dataset/data/
 *.log
 .DS_Store
+.env
+.env.local
+
