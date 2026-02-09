@@ -67,24 +67,24 @@ flowchart TD
         direction TB
         
         subgraph "OneLake & Ingestion"
-            Shortcut[OneLake Shortcuts]
-            DF[Dataflow Gen2]
-            Pipe[Data Factory Pipelines]
+            Shortcut["OneLake Shortcuts"]
+            DF["Dataflow Gen2"]
+            Pipe["Data Factory Pipelines"]
         end
 
         subgraph "Lakehouse Architecture"
-            Bronze[(Bronze Lake<br>Raw)]
-            Silver[(Silver Lake<br>Clean)]
-            Gold[(Gold Lake<br>Star Schema)]
+            Bronze[("Bronze Lake<br>Raw")]
+            Silver[("Silver Lake<br>Clean")]
+            Gold[("Gold Lake<br>Star Schema")]
         end
 
         subgraph "Compute & Intelligence"
-            Spark[Spark Notebooks<br>(PySpark)]
-            SQL[SQL Endpoint<br>(T-SQL)]
+            Spark["Spark Notebooks<br>(PySpark)"]
+            SQL["SQL Endpoint<br>(T-SQL)"]
         end
         
         subgraph "Serving"
-            PBI[Power BI<br>DirectLake]
+            PBI["Power BI<br>DirectLake"]
         end
     end
 
