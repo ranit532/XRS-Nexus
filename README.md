@@ -56,34 +56,87 @@ The platform operates in a continuous loop of **Listen -> Think -> Act**.
 ### Architecture Diagram
 ```mermaid
 flowchart TD
-    subgraph "Ingestion Layer"
-        SAP[SAP ECC] -->|Metadata| Bronze[(Bronze Lake)]
-        SFDC[Salesforce] -->|Metadata| Bronze
+    subgraph "Ingestion Sources"
+        SAP[SAP ECC]
+        SFDC[Salesforce]
+        API[REST APIs]
+        ExtADLS[External ADLS Gen2]
+    end
+
+    subgraph "Microsoft Fabric Data Platform"
+        direction TB
+        
+        subgraph "OneLake & Ingestion"
+            Shortcut[OneLake Shortcuts]
+            DF[Dataflow Gen2]
+            Pipe[Data Factory Pipelines]
+        end
+
+        subgraph "Lakehouse Architecture"
+            Bronze[(Bronze Lake<br>Raw)]
+            Silver[(Silver Lake<br>Clean)]
+            Gold[(Gold Lake<br>Star Schema)]
+        end
+
+        subgraph "Compute & Intelligence"
+            Spark[Spark Notebooks<br>(PySpark)]
+            SQL[SQL Endpoint<br>(T-SQL)]
+        end
+        
+        subgraph "Serving"
+            PBI[Power BI<br>DirectLake]
+        end
     end
 
     subgraph "AI Brain (Azure AI Foundry)"
-        direction TB
         Search["Azure AI Search<br>(Vector Store)"]
         OpenAI["Azure OpenAI<br>(GPT-4o)"]
         Flow[Prompt Flow Orchestrator]
-        
-        Bronze -->|Trigger| Flow
-        Flow -->|Retrieval| Search
-        Flow -->|Generation| OpenAI
     end
+
+    %% Flows
+    SAP & SFDC & API --> Pipe
+    Pipe --> Bronze
+    ExtADLS -.->|Shortcut| Shortcut
+    Shortcut --> Bronze
     
-    subgraph "Execution Layer (Microsoft Fabric)"
-        Flow -->|Submit Job| Spark[Fabric Spark]
-        Spark -->|Transform| Silver[(Silver Lake)]
-        Spark -->|Agg| Gold[(Gold Lake)]
-    end
+    API --> DF
+    DF --> Bronze
+
+    Bronze -->|Run| Spark
+    Spark -->|Transform| Silver
+    Spark -->|Aggregate| Gold
     
-    Spark -->|Logs| Telemetry[App Insights]
+    Gold -->|DirectLake| PBI
+    Gold -->|Query| SQL
+    
+    %% AI Integration
+    Bronze -->|Metadata Trigger| Flow
+    Flow -->|Schema/Logic| Spark
+    Flow <--> Search
+    Flow <--> OpenAI
 ```
 
 ---
 
-## 4. Comprehensive Deployment Guide
+## 4. Microsoft Fabric Components
+
+The project includes a comprehensive set of **Microsoft Fabric** artifacts to demonstrate a complete enterprise analytics solution.
+
+| Component | Path | Description |
+|:----------|:-----|:------------|
+| **Lakehouse** | `/fabric/lakehouse/` | Bronze/Silver/Gold structures, DDLs, and table registration. |
+| **Pipelines** | `/fabric/pipelines/` | Data Factory pipelines for orchestration and ingestion. |
+| **Dataflows** | `/fabric/dataflows/` | Gen2 Dataflows for low-code transformation and mapping. |
+| **OneLake** | `/fabric/onelake/` | Shortcuts to external ADLS/S3 and cross-workspace links. |
+| **Notebooks** | `/fabric/notebooks/` | PySpark notebooks for Bronze->Silver->Gold ETL and DQ checks. |
+| **SQL Endpoint** | `/fabric/sql/` | T-SQL scripts for analytics and NL2SQL validation. |
+| **Power BI** | `/fabric/powerbi/` | Semantic models and report metadata for DirectLake. |
+| **Governance** | `/fabric/governance/` | Lineage extraction and monitoring configurations. |
+
+---
+
+## 5. Comprehensive Deployment Guide
 
 Follow these steps to deploy the platform from scratch.
 
@@ -176,9 +229,10 @@ Deploy the Azure Function to expose the platform APIs.
 
 ---
 
-## 5. Project Structure Reference
+## 6. Project Structure Reference
 
 *   **`/ai-orchestration`**: The "Brain". Contains Prompt Flows, RAG scripts, and Prompty files.
 *   **`/infra`**: The "Body". Terraform code to build the Azure environment.
 *   **`/synthetic-dataset`**: The "Fuel". Scripts to generate large-scale test data.
 *   **`/etl-execution`**: The "Muscle". Spark scripts that effectively transform the data.
+*   **`/fabric`**: The "Platform". Integration artifacts for Microsoft Fabric (Lakehouse, Pipelines, Notebooks).

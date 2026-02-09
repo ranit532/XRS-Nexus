@@ -1,0 +1,80 @@
+{
+    "name": "XRS_Nexus_Gold_Model",
+    "compatibilityLevel": 1601,
+    "model": {
+        "culture": "en-US",
+        "defaultPowerBIDataSourceVersion": "powerBI_V3",
+        "sourceQueryCulture": "en-US",
+        "tables": [
+            {
+                "name": "Customer",
+                "columns": [
+                    { "name": "CustomerKey", "dataType": "int64", "sourceColumn": "customer_key" },
+                    { "name": "Name", "dataType": "string", "sourceColumn": "name" },
+                    { "name": "Region", "dataType": "string", "sourceColumn": "region" },
+                    { "name": "Country", "dataType": "string", "sourceColumn": "country" }
+                ],
+                "partitions": [
+                    {
+                        "name": "Customer",
+                        "mode": "import", 
+                        "source": {
+                            "type": "m",
+                            "expression": [
+                                "let",
+                                "    Source = AnalysisServices.Database(\"powerbi://api.powerbi.com/v1.0/myorg/WorkspaceName\", \"XRS_Nexus_Lakehouse\"),",
+                                "    Cubes = Table.Combine(Source[Data]),",
+                                "    Cube = Cubes{[Id=\"Item\", Kind=\"Cube\"]}[Data],",
+                                "    DimCustomer = Cube{[Id=\"dim_customer\"]}[Data]",
+                                "in",
+                                "    DimCustomer"
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Sales",
+                "columns": [
+                    { "name": "SalesKey", "dataType": "int64", "sourceColumn": "sales_key" },
+                    { "name": "CustomerKey", "dataType": "int64", "sourceColumn": "customer_key" },
+                    { "name": "AmountUSD", "dataType": "decimal", "sourceColumn": "amount_usd" },
+                    { "name": "DateKey", "dataType": "int64", "sourceColumn": "date_key" }
+                ],
+                "partitions": [
+                    {
+                        "name": "Sales",
+                        "mode": "import",
+                        "source": {
+                            "type": "m",
+                            "expression": [
+                                "let",
+                                "    Source = AnalysisServices.Database(\"powerbi://api.powerbi.com/v1.0/myorg/WorkspaceName\", \"XRS_Nexus_Lakehouse\"),",
+                                "    Cubes = Table.Combine(Source[Data]),",
+                                "    Cube = Cubes{[Id=\"Item\", Kind=\"Cube\"]}[Data],",
+                                "    FactSales = Cube{[Id=\"fact_sales\"]}[Data]",
+                                "in",
+                                "    FactSales"
+                            ]
+                        }
+                    }
+                ],
+                "measures": [
+                    {
+                        "name": "Total Revenue",
+                        "expression": "SUM(Sales[AmountUSD])"
+                    }
+                ]
+            }
+        ],
+        "relationships": [
+            {
+                "name": "Sales-Customer",
+                "fromTable": "Sales",
+                "fromColumn": "CustomerKey",
+                "toTable": "Customer",
+                "toColumn": "CustomerKey"
+            }
+        ]
+    }
+}

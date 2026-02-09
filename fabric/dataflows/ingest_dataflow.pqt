@@ -1,0 +1,13 @@
+// =============================================================================
+// Fabric Dataflow Gen2 - Ingestion Logic
+// Description: M Script to ingest CSV data, clean headers, and load to Lakehouse
+// =============================================================================
+
+let
+  Source = Csv.Document(Web.Contents("https://example.com/data.csv"), [Delimiter=",", Columns=5, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+  #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+  #"Changed Level" = Table.TransformColumnTypes(#"Promoted Headers",{{"ID", Int64.Type}, {"Name", type text}, {"Date", type date}, {"Amount", Currency.Type}}),
+  #"Renamed Columns" = Table.RenameColumns(#"Changed Level",{{"ID", "TransactionID"}, {"Name", "CustomerName"}}),
+  #"Filtered Rows" = Table.SelectRows(#"Renamed Columns", each [Amount] > 0)
+in
+  #"Filtered Rows"

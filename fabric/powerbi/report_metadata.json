@@ -1,0 +1,36 @@
+{
+    "reportName": "Executive Sales Dashboard",
+    "dataset": "XRS_Nexus_Gold_Model",
+    "pages": [
+        {
+            "name": "Overview",
+            "visuals": [
+                {
+                    "type": "card",
+                    "title": "Total Revenue",
+                    "measure": "Total Revenue"
+                },
+                {
+                    "type": "columnChart",
+                    "title": "Revenue by Region",
+                    "xAxis": "Customer[Region]",
+                    "yAxis": "Total Revenue"
+                }
+            ]
+        },
+        {
+            "name": "Customer Details",
+            "visuals": [
+                {
+                    "type": "table",
+                    "columns": [
+                        "Customer[Name]",
+                        "Customer[Country]",
+                        "Sales[AmountUSD]"
+                    ]
+                }
+            ]
+        }
+    ],
+    "theme": "ExecutiveDark"
+}

@@ -1,0 +1,32 @@
+# ==============================================================================
+# Fabric OneLake - Shortcut Configuration
+# Description: Defines external storage locations to be mounted in OneLake.
+# ==============================================================================
+
+shortcuts:
+  - name: "adls_corporate_data"
+    type: "ADLSGen2"
+    path: "Files/External/CorporateData"
+    target:
+      url: "https://corporatedatalake.dfs.core.windows.net"
+      container: "raw-data"
+      subpath: "/2024/"
+    auth:
+      type: "OrganizationalAccount" # or ServicePrincipal
+
+  - name: "cross_workspace_marketing"
+    type: "FabricLakehouse"
+    path: "Tables/Marketing"
+    target:
+      workspace_id: "guid-of-marketing-workspace"
+      lakehouse_id: "guid-of-marketing-lakehouse"
+      table_name: "campaign_performance"
+
+  - name: "aws_s3_partner_drop"
+    type: "AmazonS3"
+    path: "Files/External/PartnerDrop"
+    target:
+      bucket: "partner-data-drop"
+      subpath: "/incoming/"
+    auth:
+      type: "S3AccessKey" # Managed via Fabric Connection

@@ -1,0 +1,23 @@
+{
+    "governance_scope": {
+        "workspaces": [
+            "XRS_Nexus_Prod",
+            "XRS_Nexus_Dev"
+        ],
+        "include_artifact_types": [
+            "Lakehouse",
+            "DataPipeline",
+            "Notebook",
+            "SemanticModel"
+        ]
+    },
+    "export_settings": {
+        "format": "json",
+        "output_path": "data/lineage/",
+        "include_audit_logs": true
+    },
+    "purview_integration": {
+        "enabled": false,
+        "collection_id": "optional-purview-collection-id"
+    }
+}

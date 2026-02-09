@@ -1,0 +1,24 @@
+{
+    "name": "MappingDataflow",
+    "mappings": [
+        {
+            "sourceColumn": "src_id",
+            "targetColumn": "target_id",
+            "transformation": "direct"
+        },
+        {
+            "sourceColumn": "src_val",
+            "targetColumn": "target_val",
+            "transformation": "uppercase"
+        },
+        {
+            "sourceColumn": "created_at",
+            "targetColumn": "ingestion_date",
+            "transformation": "tostring"
+        }
+    ],
+    "destination": {
+        "lakehouse": "XRS_Nexus_Lakehouse",
+        "table": "silver_mapped_data"
+    }
+}
