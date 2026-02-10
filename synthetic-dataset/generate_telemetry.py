@@ -2,6 +2,7 @@ import json
 import random
 import uuid
 from datetime import datetime, timedelta
+from pathlib import Path
 
 def generate_telemetry(count=1200):
     statuses = ["SUCCESS", "FAILED", "WARNING", "RUNNING"]
@@ -47,8 +48,11 @@ if __name__ == "__main__":
     print("Generating synthetic telemetry logs...")
     logs = generate_telemetry(1200)
     
-    output_file = "data/telemetry_logs.json"
-    with open(output_file, "w") as f:
+    repo_root = Path(__file__).resolve().parents[1]
+    output_path = repo_root / "data" / "telemetry_logs.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with output_path.open("w", encoding="utf-8") as f:
         json.dump(logs, f, indent=2)
     
-    print(f"Successfully generated {len(logs)} records in {output_file}")
+    print(f"Successfully generated {len(logs)} records in {output_path}")

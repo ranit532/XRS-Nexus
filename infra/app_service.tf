@@ -21,6 +21,7 @@ resource "azurerm_storage_account" "function_sa" {
 }
 
 resource "azurerm_service_plan" "func_plan" {
+  count               = var.enable_function_app ? 1 : 0
   name                = "${var.prefix}-${var.env}-func-plan"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
@@ -30,15 +31,16 @@ resource "azurerm_service_plan" "func_plan" {
 }
 
 resource "azurerm_linux_function_app" "api" {
+  count               = var.enable_function_app ? 1 : 0
   name                = "${var.prefix}-${var.env}-api-${random_id.global_suffix.hex}"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
-  service_plan_id            = azurerm_service_plan.func_plan.id
+  service_plan_id            = azurerm_service_plan.func_plan[0].id
   storage_account_name       = azurerm_storage_account.function_sa.name
   storage_account_access_key = azurerm_storage_account.function_sa.primary_access_key
 
-  https_only                = true
+  https_only                  = true
   functions_extension_version = "~4"
 
   identity {
@@ -47,19 +49,19 @@ resource "azurerm_linux_function_app" "api" {
 
   app_settings = {
     # Functions runtime
-    FUNCTIONS_WORKER_RUNTIME    = "python"
-    WEBSITE_RUN_FROM_PACKAGE    = "1"
-    RAG_MODE                    = var.rag_mode
+    FUNCTIONS_WORKER_RUNTIME = "python"
+    WEBSITE_RUN_FROM_PACKAGE = "1"
+    RAG_MODE                 = var.rag_mode
 
     # Telemetry
     APPLICATIONINSIGHTS_CONNECTION_STRING = azurerm_application_insights.app_insights.connection_string
 
     # Optional AI services (blank when disabled)
-    AZURE_SEARCH_ENDPOINT = var.enable_ai_search ? "https://${azurerm_search_service.search[0].name}.search.windows.net" : ""
-    AZURE_SEARCH_KEY      = var.enable_ai_search ? azurerm_search_service.search[0].primary_key : ""
+    AZURE_SEARCH_ENDPOINT = var.enable_ai_search && length(azurerm_search_service.search) > 0 ? "https://${azurerm_search_service.search[0].name}.search.windows.net" : ""
+    AZURE_SEARCH_KEY      = var.enable_ai_search && length(azurerm_search_service.search) > 0 ? azurerm_search_service.search[0].primary_key : ""
 
-    AZURE_OPENAI_ENDPOINT = var.enable_openai ? azurerm_cognitive_account.openai[0].endpoint : ""
-    AZURE_OPENAI_KEY      = var.enable_openai ? azurerm_cognitive_account.openai[0].primary_access_key : ""
+    AZURE_OPENAI_ENDPOINT = var.enable_openai && length(azurerm_cognitive_account.openai) > 0 ? azurerm_cognitive_account.openai[0].endpoint : ""
+    AZURE_OPENAI_KEY      = var.enable_openai && length(azurerm_cognitive_account.openai) > 0 ? azurerm_cognitive_account.openai[0].primary_access_key : ""
   }
 
   site_config {

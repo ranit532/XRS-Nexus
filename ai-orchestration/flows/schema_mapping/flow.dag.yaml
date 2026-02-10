@@ -11,7 +11,7 @@ inputs:
 outputs:
   mapping:
     type: string
-    reference: ${llm_mapper.output}
+    reference: ${rag_lookup.output}
 nodes:
 - name: rag_lookup
   type: python
@@ -20,15 +20,3 @@ nodes:
     path: rag_lookup.py
   inputs:
     query: ${inputs.source_field}
-    
-- name: llm_mapper
-  type: llm
-  source:
-    type: code
-    path: map_field.jinja2
-  inputs:
-    deployment_name: "gpt-4o"
-    temperature: 0.2
-    source_field: ${inputs.source_field}
-    context: ${rag_lookup.output}
-    target_schema: ${inputs.target_schema}

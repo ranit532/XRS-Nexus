@@ -2,6 +2,7 @@ import json
 import random
 import uuid
 from datetime import datetime, timedelta
+from pathlib import Path
 
 def generate_sap_metadata(count=400):
     tables = ["EKKO", "VBAK", "MARA", "KNA1", "LFA1", "BKPF", "BSEG", "MATDOC", "CDHDR", "CDPOS"]
@@ -95,8 +96,11 @@ if __name__ == "__main__":
     all_metadata.extend(generate_salesforce_metadata(350))
     all_metadata.extend(generate_api_metadata(300))
     
-    output_file = "data/metadata_samples.json"
-    with open(output_file, "w") as f:
+    repo_root = Path(__file__).resolve().parents[1]
+    output_path = repo_root / "data" / "metadata_samples.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with output_path.open("w", encoding="utf-8") as f:
         json.dump(all_metadata, f, indent=2)
     
-    print(f"Successfully generated {len(all_metadata)} records in {output_file}")
+    print(f"Successfully generated {len(all_metadata)} records in {output_path}")

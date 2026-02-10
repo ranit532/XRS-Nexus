@@ -1,0 +1,94 @@
+{
+  "flow_runs": [
+    {
+      "run_id": "f705f186-b793-4241-ba4c-d980c5a648e5_0",
+      "status": "Completed",
+      "error": null,
+      "inputs": {
+        "source_field": "KUNNR",
+        "target_schema": "Customer(CustomerID, Name, Address)"
+      },
+      "output": {
+        "mapping": "Mapped to CustomerID in CRM"
+      },
+      "metrics": null,
+      "request": null,
+      "parent_run_id": "f705f186-b793-4241-ba4c-d980c5a648e5",
+      "root_run_id": "f705f186-b793-4241-ba4c-d980c5a648e5",
+      "source_run_id": null,
+      "flow_id": "default_flow_id",
+      "start_time": "2026-02-10T09:53:47.529001Z",
+      "end_time": "2026-02-10T09:53:48.903988Z",
+      "index": 0,
+      "api_calls": [
+        {
+          "name": "flow",
+          "node_name": "flow",
+          "type": "Flow",
+          "start_time": 1770697427.529001,
+          "end_time": 1770697428.903988,
+          "children": [],
+          "system_metrics": {
+            "duration": 1.374987,
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0
+          },
+          "inputs": {
+            "source_field": "KUNNR",
+            "target_schema": "Customer(CustomerID, Name, Address)"
+          },
+          "output": {
+            "mapping": "Mapped to CustomerID in CRM"
+          },
+          "error": null
+        }
+      ],
+      "name": "",
+      "description": "",
+      "tags": null,
+      "system_metrics": {
+        "duration": 1.374987,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0
+      },
+      "result": {
+        "mapping": "Mapped to CustomerID in CRM"
+      },
+      "upload_metrics": false,
+      "otel_trace_id": null,
+      "message_format": "basic"
+    }
+  ],
+  "node_runs": [
+    {
+      "node": "rag_lookup",
+      "flow_run_id": "f705f186-b793-4241-ba4c-d980c5a648e5",
+      "run_id": "f705f186-b793-4241-ba4c-d980c5a648e5_rag_lookup_0",
+      "status": "Completed",
+      "inputs": {
+        "query": "KUNNR"
+      },
+      "output": "Mapped to CustomerID in CRM",
+      "metrics": null,
+      "error": null,
+      "parent_run_id": "f705f186-b793-4241-ba4c-d980c5a648e5_0",
+      "start_time": "2026-02-10T09:53:47.529537Z",
+      "end_time": "2026-02-10T09:53:48.902976Z",
+      "index": 0,
+      "api_calls": [],
+      "cached_run_id": null,
+      "cached_flow_run_id": null,
+      "logs": {
+        "stdout": "",
+        "stderr": ""
+      },
+      "system_metrics": {
+        "duration": 1.373439
+      },
+      "result": "Mapped to CustomerID in CRM",
+      "message_format": "basic"
+    }
+  ]
+}

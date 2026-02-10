@@ -55,3 +55,9 @@ variable "rag_mode" {
   type        = string
   default     = "text"
 }
+
+variable "enable_function_app" {
+  description = "Provision Azure Functions plan + Linux Function App. Disable if your subscription has 0 Dynamic VM quota."
+  type        = bool
+  default     = true
+}

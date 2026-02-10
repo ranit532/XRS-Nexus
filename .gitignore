@@ -44,6 +44,8 @@ synthetic-dataset/data/
 .DS_Store
 .env
 .env.local
+.env.bak*
+.venv/
 
 # Terraform
 **/.terraform/

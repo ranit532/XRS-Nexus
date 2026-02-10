@@ -7,11 +7,11 @@ output "location" {
 }
 
 output "function_app_name" {
-  value = azurerm_linux_function_app.api.name
+  value = var.enable_function_app && length(azurerm_linux_function_app.api) > 0 ? azurerm_linux_function_app.api[0].name : null
 }
 
 output "function_app_base_url" {
-  value = "https://${azurerm_linux_function_app.api.default_hostname}"
+  value = var.enable_function_app && length(azurerm_linux_function_app.api) > 0 ? "https://${azurerm_linux_function_app.api[0].default_hostname}" : null
 }
 
 output "application_insights_connection_string" {
