@@ -13,17 +13,24 @@ def analyze_error_wrapper(error_log: str, context: str) -> str:
     except Exception as e:
         print(f"⚠️ [WARNING] LLM Execution failed. Returning MOCK RCA. Error: {e}")
         # Mock logic
-        if "OutOfMemory" in error_log:
-             result = {
-                 "root_cause": "Spark executor ran out of heap memory processing a large partition.",
-                 "fix": "Increase 'spark.executor.memory' from 4g to 8g.",
-                 "category": "Configuration"
-             }
+        if "OutOfMemory" in error_log or "heap space" in error_log:
+            analysis = {
+                "root_cause": "Spark executor ran out of heap memory processing a large partition.",
+                "fix": "Increase 'spark.executor.memory' from 4g to 8g.",
+                "category": "Configuration"
+            }
+        elif "memory overhead" in error_log.lower():
+            analysis = {
+                "root_cause": "Container killed by YARN for exceeding memory limits (Overhead).",
+                "fix": "Increase 'spark.executor.memoryOverhead' or reduce container size.",
+                "category": "Resource Management"
+            }
         else:
-             result = {
-                 "root_cause": "Unknown error pattern.",
-                 "fix": "Check upstream dependencies.",
-                 "category": "Unknown"
-             }
+             analysis = {
+                "root_cause": "Unknown error pattern.",
+                "fix": "Check upstream dependencies.",
+                "category": "Unknown"
+            }
+        result = analysis
     
     return result

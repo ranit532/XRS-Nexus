@@ -1,0 +1,21 @@
+resource "azapi_resource" "fabric_capacity" {
+  type                      = "Microsoft.Fabric/capacities@2022-07-01-preview"
+  name                      = "${replace(var.prefix, "-", "")}${var.env}fabric"
+  parent_id                 = azurerm_resource_group.rg.id
+  location                  = "East US"
+  schema_validation_enabled = false
+
+  body = jsonencode({
+    sku = {
+      name = "F2"
+      tier = "Fabric"
+    }
+    properties = {
+      administration = {
+        members = [
+          data.azurerm_client_config.current.object_id
+        ]
+      }
+    }
+  })
+}

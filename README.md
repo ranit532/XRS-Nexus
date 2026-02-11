@@ -170,7 +170,18 @@ We use Terraform to stand up the Azure AI and Data resources.
     terraform plan -out main.tfplan
     terraform apply main.tfplan
     ```
-    *Note: In this repository Terraform provisions core low-cost resources (Resource Group, Storage account, Application Insights, and Azure Search). Microsoft Fabric workspace and Azure AI Foundry / Prompt Flow are NOT created automatically — they require tenant admin enablement and manual portal steps (see the runbooks in `/infra`).*
+    *Note: In this repository Terraform provisions core low-cost resources (Resource Group, Storage account, Application Insights, and Azure Search). Microsoft Fabric workspace and Azure AI Foundry / Prompt Flow are NOT created automatically — they require tenant admin enablement and manual portal steps (see below).*
+
+### Step 2.1: Fabric Environment Setup (Manual/Scripted)
+Since automating Fabric Capacity requires specific tenant entitlements, we provide a script to set up your Fabric environment once you have a valid Capacity (or Trial).
+
+1.  Keep your Azure Credential active (`az login`).
+2.  Run the setup script:
+    ```bash
+    # Creates Workspace 'xrs-nexus-workspace', creates Lakehouse, and uploads simulated data
+    python3 fabric/setup_fabric.py
+    ```
+    *(If you don't have a specific capacity to assign via API, simply creating the workspace in the UI and naming it `xrs-nexus-workspace` is sufficient, then run the script to create items).*
 
 ### PoC Infra Applied (Tenant Verification)
 
@@ -244,10 +255,20 @@ To run all these flows locally:
 # Install dependencies
 python3 -m pip install prompty promptflow-tools
 
-# Run the master orchestration script
+# Run the master orchestration script (Unit Tests)
 python3 ai-orchestration/setup_flows.py
 ```
-    
+
+### Step 5.2: Running the Integrated "Connected" Demo
+To demonstrate the full Metadata Driven Architecture (Data -> AI -> Insights), run the integrated simulation script. This script:
+1.  Ingests real metadata records from the simulated Bronze Lakehouse.
+2.  Triggers "Schema Mapping" and "DQ Rule" flows dynamically based on that data.
+3.  Simulates a "Critical Error" in telemetry and triggers the "RCA" flow.
+
+```bash
+python3 ai-orchestration/run_integrated_demo.py
+```
+
 ### Step 6: Data Processing (Fabric/Spark Simulation)
 Execute the Python scripts that simulate the Fabric Spark jobs.
 1.  Process Bronze Layer (Ingestion):
