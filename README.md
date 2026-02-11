@@ -183,6 +183,9 @@ Since automating Fabric Capacity requires specific tenant entitlements, we provi
     ```
     *(If you don't have a specific capacity to assign via API, simply creating the workspace in the UI and naming it `xrs-nexus-workspace` is sufficient, then run the script to create items).*
 
+    > **Fallback: Simulation Mode**
+    > If you cannot provision a Fabric Capacity yet, you can skip to **Step 6** and run the **Spark Simulation** scripts locally. The project is designed to run end-to-end using local JSON files as a robust fallback.
+
 ### PoC Infra Applied (Tenant Verification)
 
 The following core resources have been provisioned and verified in the target subscription (examples from a verification run):
@@ -269,18 +272,7 @@ To demonstrate the full Metadata Driven Architecture (Data -> AI -> Insights), r
 python3 ai-orchestration/run_integrated_demo.py
 ```
 
-### Step 6: Data Processing (Fabric/Spark Simulation)
-Execute the Python scripts that simulate the Fabric Spark jobs.
-1.  Process Bronze Layer (Ingestion):
-    ```bash
-    python3 etl-execution/spark_jobs/process_bronze.py
-    ```
-2.  Process Silver Layer (Transformation):
-    ```bash
-    python3 etl-execution/spark_jobs/process_silver.py
-    ```
 
-### Step 7: API Deployment
 Deploy the Azure Function to expose the platform APIs.
 1.  Navigate to the API folder:
     ```bash
@@ -377,3 +369,47 @@ This section details the 5 advanced Prompt Flow use cases implemented in the pro
 *   **`/synthetic-dataset`**: The "Fuel". Scripts to generate large-scale test data.
 *   **`/etl-execution`**: The "Muscle". Spark scripts that effectively transform the data.
 *   **`/fabric`**: The "Platform". Integration artifacts for Microsoft Fabric (Lakehouse, Pipelines, Notebooks).
+
+---
+
+## 8. Alternative Architecture (Option B: No Fabric)
+
+If Microsoft Fabric is not available in your tenant, the solution can be deployed using the "Modern Data Stack" on Azure (Synapse + Databricks + ADF).
+
+### Architecture Diagram (Standard Azure)
+```mermaid
+flowchart TD
+    subgraph "Ingestion"
+        Sources[SAP / Salesforce] --> ADF[Azure Data Factory]
+        ADF --> ADLS[ADLS Gen2 (Bronze)]
+    end
+
+    subgraph "Processing & AI"
+        ADLS --> DB[Azure Databricks]
+        DB -->|Spark ETL| ADLS_Silver[ADLS Gen2 (Silver)]
+        DB <-->|AI Skills| PF[Prompt Flow]
+    end
+
+    subgraph "Serving"
+        ADLS_Silver --> Synapse[Synapse Serverless SQL]
+        Synapse --> PBI[Power BI]
+    end
+```
+
+### Setup Instructions (Option B)
+
+1.  **Provision Infrastructure**:
+    The terraform configuration in `infra/modern_data_stack.tf` will provision ADF, Databricks, and Synapse automatically.
+    ```bash
+    cd infra
+    terraform apply
+    ```
+
+2.  **Upload Data (ADLS Gen2)**:
+    Instead of OneLake, we push data to standard ADLS Gen2 containers.
+    ```bash
+    python3 scripts/upload_to_adls.py
+    ```
+
+3.  **Run Processing**:
+    Use the Databricks Workspace to mount the ADLS containers and run the same PySpark logic found in `etl-execution/spark_jobs/`.

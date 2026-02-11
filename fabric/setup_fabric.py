@@ -1,20 +1,35 @@
 import os
 import requests
 import json
+import msal
 from azure.identity import DefaultAzureCredential
 
 # Config
 WORKSPACE_NAME = "xrs-nexus-workspace"
 LAKEHOUSE_NAME = "XRSNexusLakehouse"
-CAPACITY_ID = "" # Optional: Set if you have a specific F2/Trial capacity ID to assign
+
+# Auth Config (Matches check_access.py)
+CLIENT_ID = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"  # Microsoft Azure CLI public client ID
+TENANT_ID = "8ed505e3-a743-4271-85f6-8ec8b5d0b18b"
+AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
+SCOPES = ["https://analysis.windows.net/powerbi/api/.default"]
 
 # API Endpoints
 FABRIC_API_BASE = "https://api.fabric.microsoft.com/v1"
 
 def get_token():
-    credential = DefaultAzureCredential()
-    token = credential.get_token("https://api.fabric.microsoft.com/.default")
-    return token.token
+    app = msal.PublicClientApplication(CLIENT_ID, authority=AUTHORITY)
+    accounts = app.get_accounts()
+    if accounts:
+        result = app.acquire_token_silent(SCOPES, account=accounts[0])
+    else:
+        result = None
+    if not result:
+        result = app.acquire_token_interactive(scopes=SCOPES)
+    if "access_token" in result:
+        return result["access_token"]
+    else:
+        raise Exception(result.get("error_description"))
 
 def create_workspace(headers):
     print(f"Creating Workspace: {WORKSPACE_NAME}...")
@@ -123,7 +138,17 @@ if __name__ == "__main__":
         lh_id = create_lakehouse(headers, ws_id)
         
         # 3. Upload Data
-        credential = DefaultAzureCredential()
+        # Note: Uploading to OneLake via Python SDK requires ADLS Gen2 credentials. 
+        # For simplicity in this script, we will use the same token if possible or rely on AZ CLI login
+        # but the Azure Identity credential might not match the interactive MSAL token user.
+        # We will attempt to use the TokenCredential wrapper for the ADLS client.
+        
+        from azure.core.credentials import AccessToken
+        class SimpleTokenCredential:
+            def get_token(self, *scopes, **kwargs):
+                return AccessToken(token, 1800) # expiry dummy
+                
+        credential = SimpleTokenCredential()
         
         # Upload Metadata
         upload_file_to_onelake(credential, ws_id, lh_id, "data/metadata_samples.json", "metadata")

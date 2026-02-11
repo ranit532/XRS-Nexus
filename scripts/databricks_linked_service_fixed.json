@@ -1,0 +1,17 @@
+{
+    "type": "AzureDatabricks",
+    "typeProperties": {
+        "domain": "https://adb-7405606665021845.5.azuredatabricks.net",
+        "accessToken": {
+            "type": "SecureString",
+            "value": "YOUR_DATABRICKS_TOKEN_HERE"
+        },
+        "newClusterNodeType": "Standard_D3_v2",
+        "newClusterNumOfWorker": "0:1",
+        "newClusterVersion": "13.3.x-scala2.12",
+        "newClusterSparkConf": {
+            "spark.speculation": "false",
+            "spark.databricks.delta.preview.enabled": "true"
+        }
+    }
+}
