@@ -1,0 +1,53 @@
+---
+name: Resolve Schema Mapping
+description: Decides the best canonical field mapping based on retrieved context.
+authors:
+  - XRS Nexus Team
+model:
+  api: chat
+  configuration:
+    type: azure_openai
+    azure_deployment: gpt-4o
+  parameters:
+    temperature: 0.2
+    max_tokens: 500
+inputs:
+  source_field:
+    type: string
+  source_system:
+    type: string
+  retrieved_context:
+    type: string
+sample:
+  source_field: "KUNNR"
+  source_system: "SAP"
+  retrieved_context: "Found in SAP Dictionary: {'description': 'Customer Number', 'type': 'VARCHAR(10)'}\nPotential Canonical Match: {'description': 'Global unique identifier for customers', 'type': 'String', 'format': 'UUID'}"
+---
+
+system:
+You are an expert Data Architect for XRS-Nexus.
+Your task is to map a source field from a specific system (SAP, Salesforce, etc.) to the Enterprise Canonical Model.
+
+Use the provided 'Retrieved Context' which contains definitions from the source system and potential matches in the Canonical Model.
+
+Rules:
+1. Analyze the semantic meaning of the source field.
+2. Select the best matching field from the Canonical Model suggestions in the context.
+3. If no clear match exists, suggest "UNKNOWN".
+4. Provide a confidence score (0-1) and a brief rationale.
+
+Output Format (JSON):
+{
+  "target_field": "Name of the canonical field",
+  "confidence": 0.95,
+  "rationale": "Explanation of why this map is correct."
+}
+
+user:
+Source System: {{source_system}}
+Source Field: {{source_field}}
+
+Retrieved Context:
+{{retrieved_context}}
+
+Output:

@@ -20,6 +20,7 @@ We leverage **Azure AI Foundry** to orchestrate intelligent workflows using **Pr
 | **Automated Error Resolution** | Analyzes stack traces and error logs to suggest root causes and fixes. | Prompt Flow + **Self-Correction** |
 | **SLA Breach Prediction** | Predicts pipeline runtime based on volume and historical telemetry. | Predictive AI (LLM-based) |
 | **Natural Language to SQL** | Converts business questions ("Total sales in UK") into SparkSQL. | **NL2SQL** Prompt Flow |
+| **Natural Language DQ Rules** | Converts English rules ("Revenue must be positive") into Python assertions. | **Prompty** + Data Quality |
 | **Impact Analysis** | Generates human-readable reports on downstream impact of schema changes. | Lineage Graph + GenAI Summarization |
 
 ---
@@ -169,7 +170,35 @@ We use Terraform to stand up the Azure AI and Data resources.
     terraform plan -out main.tfplan
     terraform apply main.tfplan
     ```
-    *This creates the AI Hub, Project, Search Service, and Storage Accounts.*
+    *Note: In this repository Terraform provisions core low-cost resources (Resource Group, Storage account, Application Insights, and Azure Search). Microsoft Fabric workspace and Azure AI Foundry / Prompt Flow are NOT created automatically — they require tenant admin enablement and manual portal steps (see the runbooks in `/infra`).*
+
+### PoC Infra Applied (Tenant Verification)
+
+The following core resources have been provisioned and verified in the target subscription (examples from a verification run):
+
+- **Resource Group:** xrs-nexus-dev-rg
+- **Storage Account(s):** xrsnexusstg (and a secondary storage account `xrsnexusdevdc84ca6e`)
+- **Log Analytics Workspace:** xrs-nexus-dev-law
+- **Application Insights:** xrs-nexus-appi
+- **Azure Cognitive Search:** xrs-nexus-dev-search (SKU: free)
+
+You can verify these resources locally with the Azure CLI (example):
+
+```bash
+az group show -n xrs-nexus-dev-rg
+az resource list -g xrs-nexus-dev-rg -o table
+az storage account show -g xrs-nexus-dev-rg -n xrsnexusstg -o json
+az search service show -g xrs-nexus-dev-rg -n xrs-nexus-dev-search -o json
+az monitor app-insights component show -g xrs-nexus-dev-rg -n xrs-nexus-appi -o json
+```
+
+Next steps to complete the end-to-end PoC (manual actions required):
+
+- Create a **Microsoft Fabric workspace** in the Azure portal or request tenant enablement for Fabric capacities.
+- Create an **Azure AI Foundry / Prompt Flow project** in AI Studio (requires a portal action and appropriate subscription access).
+- Once the Fabric workspace and Foundry/Prompt Flow project exist, run the provided import scripts in `/infra/import_promptflow.sh` to import flows from `ai-orchestration/flows/` (the scripts are dry-run safe; they require the Foundry/Prompt Flow admin endpoint and token).
+
+See `/infra/README_PROVISIONING.md`, `/infra/foundry_runbook.md` and `/infra/promptflow_runbook.md` for detailed step-by-step guidance and tenant-runbook tasks.
 
 ### Step 3: Data Generation (Simulation)
 Generate synthetic data to simulate a production workload for testing.
@@ -199,12 +228,26 @@ Now you can run the actual Prompt Flows.
     # Test mapping a field 'KUNNR' (German for Customer Number in SAP)
     pf flow test --flow ai-orchestration/flows/schema_mapping --inputs source_field="KUNNR"
     ```
-2.  **NL2SQL Flow**:
-    ```bash
-    # Test converting a question to SQL
     pf flow test --flow ai-orchestration/flows/nl2sql --inputs user_question="Show total revenue for UK"
     ```
 
+### Step 5.1: Executing Advanced Python SDK Flows
+We have implemented 5 advanced use cases using the **Prompt Flow Python SDK**.
+1.  **Multi-Source Schema Mapping** (Simulated RAG)
+2.  **Context-Aware NL2SQL** (with Validation)
+3.  **Intelligent PII Redaction** (Prompty-based)
+4.  **Automated Error Root Cause Analysis** (Log Analysis)
+5.  **Natural Language Data Quality Rules** (English to Python)
+
+To run all these flows locally:
+```bash
+# Install dependencies
+python3 -m pip install prompty promptflow-tools
+
+# Run the master orchestration script
+python3 ai-orchestration/setup_flows.py
+```
+    
 ### Step 6: Data Processing (Fabric/Spark Simulation)
 Execute the Python scripts that simulate the Fabric Spark jobs.
 1.  Process Bronze Layer (Ingestion):

@@ -1,0 +1,20 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+environment:
+  python_requirements_txt: requirements.txt
+inputs:
+  rule:
+    type: string
+    default: "Revenue must be positive"
+outputs:
+  python_code:
+    type: string
+    reference: ${translate_rule.output}
+
+nodes:
+- name: translate_rule
+  type: python
+  source:
+    type: code
+    path: rule_translator_wrapper.py
+  inputs:
+    rule: ${inputs.rule}

@@ -1,0 +1,34 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+environment:
+  python_requirements_txt: requirements.txt
+inputs:
+  source_field:
+    type: string
+    default: "KUNNR"
+  source_system:
+    type: string
+    default: "SAP"
+outputs:
+  mapping_result:
+    type: string
+    reference: ${resolve_mapping.output}
+
+nodes:
+- name: retrieve_schemas
+  type: python
+  source:
+    type: code
+    path: retrieve_schemas.py
+  inputs:
+    source_field: ${inputs.source_field}
+    source_system: ${inputs.source_system}
+
+- name: resolve_mapping
+  type: python
+  source:
+    type: code
+    path: resolve_mapping_wrapper.py
+  inputs:
+    source_field: ${inputs.source_field}
+    source_system: ${inputs.source_system}
+    retrieved_context: ${retrieve_schemas.output}

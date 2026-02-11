@@ -1,0 +1,20 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+environment:
+  python_requirements_txt: requirements.txt
+inputs:
+  text:
+    type: string
+    default: "Please contact Alice Smith at alice@example.com."
+outputs:
+  redacted_text:
+    type: string
+    reference: ${redact_pii.output}
+
+nodes:
+- name: redact_pii
+  type: python
+  source:
+    type: code
+    path: redact_pii_wrapper.py
+  inputs:
+    text: ${inputs.text}

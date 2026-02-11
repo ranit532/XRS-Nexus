@@ -1,0 +1,29 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+environment:
+  python_requirements_txt: requirements.txt
+inputs:
+  error_log:
+    type: string
+    default: "java.lang.OutOfMemoryError: Java heap space"
+outputs:
+  analysis:
+    type: string
+    reference: ${analyze_error.output}
+
+nodes:
+- name: retrieve_context
+  type: python
+  source:
+    type: code
+    path: retrieve_error_context.py
+  inputs:
+    error_message: ${inputs.error_log}
+
+- name: analyze_error
+  type: python
+  source:
+    type: code
+    path: analyze_error_wrapper.py
+  inputs:
+    error_log: ${inputs.error_log}
+    context: ${retrieve_context.output}

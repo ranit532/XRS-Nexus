@@ -1,0 +1,47 @@
+---
+name: Analyze Error
+description: Diagnoses root cause of software errors based on logs and context.
+authors:
+  - XRS Nexus Team
+model:
+  api: chat
+  configuration:
+    type: azure_openai
+    azure_deployment: gpt-4o
+  parameters:
+    temperature: 0.2
+    max_tokens: 800
+inputs:
+  error_log:
+    type: string
+  context:
+    type: string
+sample:
+  error_log: "java.lang.OutOfMemoryError: Java heap space at org.apache.spark..."
+  context: "Known Issue: OutOfMemoryError. Solution: Increase executor memory."
+---
+
+system:
+You are a Senior Site Reliability Engineer (SRE).
+Analyze the provided error log and the retrieved context from the Knowledge Base.
+
+Task:
+1. Identify the Root Cause.
+2. Suggest a specific Fix.
+3. Categorize the issue (Infra, Code, Data, Config).
+
+Output Format (JSON):
+{
+  "root_cause": "Brief explanation",
+  "fix": "Actionable steps",
+  "category": "Category"
+}
+
+user:
+Error Log:
+{{error_log}}
+
+Context from KEDB:
+{{context}}
+
+Output:

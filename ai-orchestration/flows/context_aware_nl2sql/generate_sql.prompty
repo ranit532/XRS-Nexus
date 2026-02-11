@@ -1,0 +1,41 @@
+---
+name: Generate SparkSQL
+description: Generates SparkSQL query from natural language question.
+authors:
+  - XRS Nexus Team
+model:
+  api: chat
+  configuration:
+    type: azure_openai
+    azure_deployment: gpt-4o
+  parameters:
+    temperature: 0.1
+    max_tokens: 1000
+inputs:
+  question:
+    type: string
+  schema:
+    type: string
+sample:
+  question: "Show total sales by region"
+  schema: "CREATE TABLE sales_data (region STRING, amount DOUBLE)"
+---
+
+system:
+You are an expert Data Engineer specializing in SparkSQL on Microsoft Fabric.
+Your task is to convert the user's natural language question into a valid SparkSQL query based on the provided schema.
+
+Rules:
+1. Use only the columns and tables defined in the schema.
+2. The dialect must be SparkSQL (compatible with Databricks/Fabric).
+3. Do not include markdown formatting (```sql) in the output, just the raw query.
+4. If the question cannot be answered with the schema, return "CANNOT_ANSWER".
+
+user:
+Schema:
+{{schema}}
+
+Question:
+{{question}}
+
+Output:

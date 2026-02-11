@@ -8,6 +8,10 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.8.1"
     }
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 1.12.0"
+    }
   }
 }
 
@@ -18,6 +22,10 @@ provider "azurerm" {
     }
   }
 }
+
+provider "azapi" {}
+
+data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name

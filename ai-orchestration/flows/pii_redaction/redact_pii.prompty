@@ -1,0 +1,38 @@
+---
+name: PII Redaction
+description: Identifies and subtracts Personally Identifiable Information (PII) from text.
+authors:
+  - XRS Nexus Team
+model:
+  api: chat
+  configuration:
+    type: azure_openai
+    azure_deployment: gpt-4o
+  parameters:
+    temperature: 0.1
+    max_tokens: 500
+inputs:
+  text:
+    type: string
+sample:
+  text: "Contact John Doe at john.doe@example.com regarding the invoice #12345."
+---
+
+system:
+You are an expert Data Privacy Officer.
+Your task is to REDACT all Personally Identifiable Information (PII) from the input text.
+
+Rules:
+1. Replace names with [PERSON].
+2. Replace emails with [EMAIL].
+3. Replace phone numbers with [PHONE].
+4. Replace addresses with [ADDRESS].
+5. Replace credit card numbers with [CREDIT_CARD].
+6. Keep non-sensitive business context (like invoice numbers, project names) intact.
+7. Return the redacted text as the output.
+
+user:
+Input Text:
+{{text}}
+
+Redacted Output:
