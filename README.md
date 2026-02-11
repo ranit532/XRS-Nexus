@@ -272,7 +272,84 @@ Deploy the Azure Function to expose the platform APIs.
 
 ---
 
-## 6. Project Structure Reference
+## 6. Advanced AI Use Cases & Execution Guide
+This section details the 5 advanced Prompt Flow use cases implemented in the project, including their logic and how to test them.
+
+### Use Case 1: Multi-Source Schema Mapping (RAG)
+**Goal:** Map disparate fields from source systems (SAP, Salesforce) to the Enterprise Canonical Model.
+**Logic:**
+1.  **Retrieve:** Simulates searching a Vector Store (RAG) for field definitions in SAP/Salesforce dictionaries.
+2.  **Resolve:** Uses GPT-4o to semantically match the source field to a target Canonical Field.
+**Test Input:**
+```json
+{
+  "source_field": "KUNNR",
+  "source_system": "SAP"
+}
+```
+**Expected Output:** Match `KUNNR` -> `CustomerID` with high confidence.
+
+---
+
+### Use Case 2: Context-Aware NL2SQL
+**Goal:** Convert natural language business questions into executable SparkSQL.
+**Logic:**
+1.  **Schema Lookup:** Retrieves the schema for the requested table.
+2.  **SQL Gen:** Prompty generates the SparkSQL query.
+3.  **Validation:** Python tool validates syntax (e.g., ensures `SELECT` only, no `DROP`).
+**Test Input:**
+```json
+{
+  "question": "Show total sales by region",
+  "table_name": "sales_data"
+}
+```
+**Expected Output:** `SELECT region, SUM(amount) FROM sales_data GROUP BY region...`
+
+---
+
+### Use Case 3: Intelligent PII Redaction
+**Goal:** Redact sensitive personal data while preserving business context.
+**Logic:** Uses a Prompty to identify PII (Names, Emails) and replace them with tokens (`[PERSON]`, `[EMAIL]`) without removing non-sensitive IDs.
+**Test Input:**
+```json
+{
+  "text": "Please contact John Doe (john.doe@enterprise.com) regarding invoice #INV-2024-001."
+}
+```
+**Expected Output:** `Please contact [PERSON] ([EMAIL]) regarding invoice #INV-2024-001.`
+
+---
+
+### Use Case 4: Automated Error Root Cause Analysis (RCA)
+**Goal:** Diagnose Spark/Application errors from log traces.
+**Logic:**
+1.  **Retrieve:** Searches a "Known Error Database" for similar past issues.
+2.  **Analyze:** LLM combines the log and context to suggest a Root Cause and Fix.
+**Test Input:**
+```json
+{
+  "error_log": "java.lang.OutOfMemoryError: Java heap space"
+}
+```
+**Expected Output:** Suggests increasing `spark.executor.memory`.
+
+---
+
+### Use Case 5: Natural Language Data Quality Rules
+**Goal:** Enable business users to define DQ rules in plain English.
+**Logic:** Translates English requirements into Python `Great Expectations` syntax.
+**Test Input:**
+```json
+{
+  "rule": "Revenue must be positive."
+}
+```
+**Expected Output:** `df.expect_column_values_to_be_between("revenue", min_value=0)`
+
+---
+
+## 7. Project Structure Reference
 
 *   **`/ai-orchestration`**: The "Brain". Contains Prompt Flows, RAG scripts, and Prompty files.
 *   **`/infra`**: The "Body". Terraform code to build the Azure environment.
