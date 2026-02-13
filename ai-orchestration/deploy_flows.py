@@ -45,11 +45,13 @@ if __name__ == "__main__":
     
     # List of flows to deploy
     flows = [
-        ("ai-orchestration/flows/advanced_schema_mapping", "Advanced Schema Mapping"),
-        ("ai-orchestration/flows/context_aware_nl2sql", "Context-Aware NL2SQL"),
-        ("ai-orchestration/flows/pii_redaction", "Intelligent PII Redaction"),
-        ("ai-orchestration/flows/error_rca", "Automated Error RCA"),
-        ("ai-orchestration/flows/dq_rules", "Natural Language DQ Rules")
+        ("flows/advanced_schema_mapping", "Advanced Schema Mapping"),
+        ("flows/context_aware_nl2sql", "Context-Aware NL2SQL"),
+        ("flows/pii_redaction", "Intelligent PII Redaction"),
+        ("flows/pii_detection", "PII Detection"),
+        ("flows/error_rca", "Automated Error RCA"),
+        ("flows/dq_rules", "Natural Language DQ Rules"),
+        ("flows/adf_data_validation", "ADF Data Validation")
     ]
     
     for path, name in flows:

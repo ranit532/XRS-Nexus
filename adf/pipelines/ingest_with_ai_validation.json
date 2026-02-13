@@ -1,0 +1,171 @@
+{
+    "name": "ingest_with_ai_validation",
+    "properties": {
+        "activities": [
+            {
+                "name": "CopyCustomersToSilver",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 2,
+                    "retryIntervalInSeconds": 30
+                },
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false,
+                            "enablePartitionDiscovery": false
+                        }
+                    },
+                    "sink": {
+                        "type": "ParquetSink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings"
+                        }
+                    },
+                    "enableStaging": false
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ds_bronze_customers",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ds_silver_customers",
+                        "type": "DatasetReference"
+                    }
+                ]
+            },
+            {
+                "name": "ValidateCustomersData",
+                "type": "WebActivity",
+                "dependsOn": [
+                    {
+                        "activity": "CopyCustomersToSilver",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 1,
+                    "retryIntervalInSeconds": 30
+                },
+                "typeProperties": {
+                    "url": "https://xrs-nexus-ai-func-c53471.azurewebsites.net/api/validate-data",
+                    "method": "POST",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "body": {
+                        "datasets": [
+                            "customers"
+                        ],
+                        "layer": "silver",
+                        "validation_rules": [
+                            "check_nulls",
+                            "check_duplicates",
+                            "check_pii"
+                        ]
+                    },
+                    "authentication": {
+                        "type": "MSI",
+                        "resource": "https://management.azure.com/"
+                    }
+                }
+            },
+            {
+                "name": "CopyOrdersToSilver",
+                "type": "Copy",
+                "dependsOn": [
+                    {
+                        "activity": "ValidateCustomersData",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 2,
+                    "retryIntervalInSeconds": 30
+                },
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false,
+                            "enablePartitionDiscovery": false
+                        }
+                    },
+                    "sink": {
+                        "type": "ParquetSink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings"
+                        }
+                    },
+                    "enableStaging": false
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ds_bronze_orders",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ds_silver_orders",
+                        "type": "DatasetReference"
+                    }
+                ]
+            },
+            {
+                "name": "ValidateOrdersData",
+                "type": "WebActivity",
+                "dependsOn": [
+                    {
+                        "activity": "CopyOrdersToSilver",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 1,
+                    "retryIntervalInSeconds": 30
+                },
+                "typeProperties": {
+                    "url": "https://xrs-nexus-ai-func-c53471.azurewebsites.net/api/validate-data",
+                    "method": "POST",
+                    "headers": {
+                        "Content-Type": "application/json"
+                    },
+                    "body": {
+                        "datasets": [
+                            "orders"
+                        ],
+                        "layer": "silver",
+                        "validation_rules": [
+                            "check_nulls",
+                            "check_duplicates"
+                        ]
+                    },
+                    "authentication": {
+                        "type": "MSI",
+                        "resource": "https://management.azure.com/"
+                    }
+                }
+            }
+        ],
+        "annotations": [],
+        "description": "Ingests synthetic data from bronze to silver layer with AI-powered validation"
+    }
+}

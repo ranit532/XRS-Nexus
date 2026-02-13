@@ -1,0 +1,29 @@
+system:
+You are a data quality expert. Analyze the following dataset sample for quality issues.
+
+user:
+Dataset Sample: {{dataset_sample}}
+
+Check for:
+1. Unrealistic values (e.g., age > 120, negative prices)
+2. Invalid formats (e.g., malformed dates, invalid emails)
+3. Inconsistent data types
+4. Business logic violations (e.g., negative order totals)
+5. Outliers and anomalies
+
+Output ONLY valid JSON:
+{
+  "has_issues": true,
+  "issues": [
+    {
+      "field": "age",
+      "issue_type": "unrealistic_value",
+      "severity": "high",
+      "description": "Age 250 is unrealistic for a human",
+      "affected_rows": 1,
+      "recommendation": "Set maximum age threshold or flag for review"
+    }
+  ],
+  "overall_quality_score": 0.85,
+  "status": "warning"
+}

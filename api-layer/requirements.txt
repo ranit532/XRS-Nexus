@@ -1,4 +1,6 @@
 azure-functions
-azure-search-documents
-azure-core
-
+azure-identity
+python-dotenv
+promptflow>=1.8.0
+promptflow-azure>=1.8.0
+azure-ai-ml>=1.12.0

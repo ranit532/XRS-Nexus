@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-02-13T15:00:24.339717",
+  "datasets": {
+    "customers": {
+      "count": 2000,
+      "quality_issues": "5% null emails, 2% invalid ages"
+    },
+    "orders": {
+      "count": 5000,
+      "quality_issues": "3% missing customer_id, 1% negative amounts"
+    },
+    "products": {
+      "count": 500,
+      "quality_issues": "2% null prices"
+    },
+    "transactions": {
+      "count": 3000,
+      "quality_issues": "None (clean)"
+    },
+    "events": {
+      "count": 10000,
+      "quality_issues": "None (clean)"
+    }
+  },
+  "total_records": 20500
+}

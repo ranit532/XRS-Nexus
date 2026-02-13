@@ -23,15 +23,15 @@ resource "azurerm_synapse_spark_pool" "spark_pool" {
   name                 = "sparkpool01"
   synapse_workspace_id = azurerm_synapse_workspace.synapse.id
   node_size_family     = "MemoryOptimized"
-  node_size            = "XXSmall" # 4 vCores per node (was Small = 8 vCores)
+  node_size            = "Small" # 8 vCores per node (minimum allowed by Azure)
 
   auto_scale {
-    max_node_count = 3 # Max 3 nodes = 12 vCores total
-    min_node_count = 2 # Min 2 nodes = 8 vCores
+    max_node_count = 3 # Min allowed by Azure (24 vCores max)
+    min_node_count = 3 # Min allowed by Azure (24 vCores baseline)
   }
 
   auto_pause {
-    delay_in_minutes = 15
+    delay_in_minutes = 5 # Faster shutdown to save trial credits
   }
 
   spark_version = "3.3"

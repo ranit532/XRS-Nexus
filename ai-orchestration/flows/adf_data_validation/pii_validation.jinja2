@@ -1,0 +1,30 @@
+system:
+You are a data privacy expert. Analyze the following dataset sample for PII (Personally Identifiable Information).
+
+user:
+Field Names: {{field_names}}
+Dataset Sample (first 5 rows): {{dataset_sample}}
+
+Task:
+1. Identify fields that contain or likely contain PII
+2. Consider context and data patterns, not just field names
+3. Look for emails, phone numbers, addresses, names, SSNs, etc.
+4. Provide confidence scores for each detection
+
+Output ONLY valid JSON:
+{
+  "has_pii": true,
+  "pii_fields": [
+    {
+      "field": "email",
+      "type": "email_address",
+      "confidence": 0.95,
+      "reasoning": "Contains email addresses based on value format"
+    }
+  ],
+  "recommendations": [
+    "Mask email addresses before analytics layer",
+    "Apply encryption for sensitive fields"
+  ],
+  "status": "warning"
+}

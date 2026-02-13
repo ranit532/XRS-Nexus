@@ -1,0 +1,139 @@
+# ==============================================================================
+# Azure Data Factory Pipeline Infrastructure
+# Purpose: ADF-based data orchestration with AI integration and lineage tracking
+# ==============================================================================
+
+# Additional ADLS Gen2 containers for synthetic datasets
+resource "azurerm_storage_data_lake_gen2_filesystem" "synthetic_data" {
+  name               = "synthetic-data"
+  storage_account_id = azurerm_storage_account.stg.id
+}
+
+resource "azurerm_storage_data_lake_gen2_filesystem" "lineage" {
+  name               = "lineage"
+  storage_account_id = azurerm_storage_account.stg.id
+}
+
+# Grant ADF managed identity access to storage
+resource "azurerm_role_assignment" "adf_storage_contributor" {
+  scope                = azurerm_storage_account.stg.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_data_factory.adf.identity.principal_id
+}
+
+# ADF Linked Service - ADLS Gen2 Bronze
+resource "azurerm_data_factory_linked_service_data_lake_storage_gen2" "bronze" {
+  name                 = "ls_adls_bronze"
+  data_factory_id      = azurerm_data_factory.adf.id
+  url                  = "https://${azurerm_storage_account.stg.name}.dfs.core.windows.net"
+  use_managed_identity = true
+}
+
+# ADF Linked Service - ADLS Gen2 Silver
+resource "azurerm_data_factory_linked_service_data_lake_storage_gen2" "silver" {
+  name                 = "ls_adls_silver"
+  data_factory_id      = azurerm_data_factory.adf.id
+  url                  = "https://${azurerm_storage_account.stg.name}.dfs.core.windows.net"
+  use_managed_identity = true
+}
+
+# ADF Linked Service - ADLS Gen2 Gold
+resource "azurerm_data_factory_linked_service_data_lake_storage_gen2" "gold" {
+  name                 = "ls_adls_gold"
+  data_factory_id      = azurerm_data_factory.adf.id
+  url                  = "https://${azurerm_storage_account.stg.name}.dfs.core.windows.net"
+  use_managed_identity = true
+}
+
+# Access policy for ADF to read secrets from existing Key Vault (from dependencies.tf)
+resource "azurerm_key_vault_access_policy" "adf_kv_access" {
+  key_vault_id = azurerm_key_vault.kv.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = azurerm_data_factory.adf.identity.principal_id
+
+  secret_permissions = [
+    "Get", "List"
+  ]
+}
+
+# ADF Dataset - Bronze Customers (CSV)
+resource "azurerm_data_factory_dataset_delimited_text" "bronze_customers" {
+  name                = "ds_bronze_customers"
+  data_factory_id     = azurerm_data_factory.adf.id
+  linked_service_name = azurerm_data_factory_linked_service_data_lake_storage_gen2.bronze.name
+
+  azure_blob_storage_location {
+    container = azurerm_storage_data_lake_gen2_filesystem.bronze.name
+    path      = "customers"
+    filename  = "customers.csv"
+  }
+
+  column_delimiter    = ","
+  row_delimiter       = "\n"
+  encoding            = "UTF-8"
+  quote_character     = "\""
+  escape_character    = "\\"
+  first_row_as_header = true
+}
+
+# ADF Dataset - Bronze Orders (CSV)
+resource "azurerm_data_factory_dataset_delimited_text" "bronze_orders" {
+  name                = "ds_bronze_orders"
+  data_factory_id     = azurerm_data_factory.adf.id
+  linked_service_name = azurerm_data_factory_linked_service_data_lake_storage_gen2.bronze.name
+
+  azure_blob_storage_location {
+    container = azurerm_storage_data_lake_gen2_filesystem.bronze.name
+    path      = "orders"
+    filename  = "orders.csv"
+  }
+
+  column_delimiter    = ","
+  row_delimiter       = "\n"
+  encoding            = "UTF-8"
+  quote_character     = "\""
+  escape_character    = "\\"
+  first_row_as_header = true
+}
+
+# ADF Dataset - Silver Customers (Parquet)
+resource "azurerm_data_factory_dataset_parquet" "silver_customers" {
+  name                = "ds_silver_customers"
+  data_factory_id     = azurerm_data_factory.adf.id
+  linked_service_name = azurerm_data_factory_linked_service_data_lake_storage_gen2.silver.name
+
+  azure_blob_storage_location {
+    container = azurerm_storage_data_lake_gen2_filesystem.silver.name
+    path      = "customers"
+  }
+
+  compression_codec = "snappy"
+}
+
+# ADF Dataset - Silver Orders (Parquet)
+resource "azurerm_data_factory_dataset_parquet" "silver_orders" {
+  name                = "ds_silver_orders"
+  data_factory_id     = azurerm_data_factory.adf.id
+  linked_service_name = azurerm_data_factory_linked_service_data_lake_storage_gen2.silver.name
+
+  azure_blob_storage_location {
+    container = azurerm_storage_data_lake_gen2_filesystem.silver.name
+    path      = "orders"
+  }
+
+  compression_codec = "snappy"
+}
+
+# ADF Dataset - Gold Customer Analytics (Parquet)
+resource "azurerm_data_factory_dataset_parquet" "gold_customer_analytics" {
+  name                = "ds_gold_customer_analytics"
+  data_factory_id     = azurerm_data_factory.adf.id
+  linked_service_name = azurerm_data_factory_linked_service_data_lake_storage_gen2.gold.name
+
+  azure_blob_storage_location {
+    container = azurerm_storage_data_lake_gen2_filesystem.gold.name
+    path      = "customer_analytics"
+  }
+
+  compression_codec = "snappy"
+}

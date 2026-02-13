@@ -1,0 +1,322 @@
+{
+  "metadata": {
+    "captured_at": "2026-02-13T12:06:13.985253",
+    "run_id": "fec6528a-08a3-11f1-9885-920e0d931155",
+    "pipeline_name": "ingest_synthetic_data",
+    "status": "Succeeded"
+  },
+  "pipeline_run": {
+    "run_id": "fec6528a-08a3-11f1-9885-920e0d931155",
+    "pipeline_name": "ingest_synthetic_data",
+    "status": "Succeeded",
+    "run_start": "2026-02-13T06:19:48.027947+00:00",
+    "run_end": "2026-02-13T06:20:18.943935+00:00",
+    "duration_seconds": 30.915,
+    "parameters": {}
+  },
+  "activities": [
+    {
+      "activity_name": "CopyCustomersToSilver",
+      "activity_type": "Copy",
+      "status": "Succeeded",
+      "activity_run_start": "2026-02-13T06:19:55.601864+00:00",
+      "activity_run_end": "2026-02-13T06:20:17.633332+00:00",
+      "duration_seconds": 22.031,
+      "input": {
+        "source": {
+          "type": "DelimitedTextSource",
+          "storeSettings": {
+            "type": "AzureBlobFSReadSettings",
+            "recursive": false,
+            "enablePartitionDiscovery": false
+          }
+        },
+        "sink": {
+          "type": "ParquetSink",
+          "storeSettings": {
+            "type": "AzureBlobFSWriteSettings"
+          }
+        },
+        "translator": {
+          "type": "TabularTranslator",
+          "typeConversion": true,
+          "typeConversionSettings": {
+            "allowDataTruncation": true,
+            "treatBooleanAsNumber": false
+          }
+        },
+        "enableStaging": false
+      },
+      "output": {
+        "dataRead": 217895,
+        "dataWritten": 89628,
+        "filesRead": 1,
+        "filesWritten": 1,
+        "sourcePeakConnections": 1,
+        "sinkPeakConnections": 1,
+        "rowsRead": 2000,
+        "rowsCopied": 2000,
+        "copyDuration": 16,
+        "throughput": 36.316,
+        "errors": [],
+        "effectiveIntegrationRuntime": "AutoResolveIntegrationRuntime (East US)",
+        "usedDataIntegrationUnits": 4,
+        "billingReference": {
+          "activityType": "DataMovement",
+          "billableDuration": [
+            {
+              "meterType": "AzureIR",
+              "duration": 0.06666666666666667,
+              "unit": "DIUHours"
+            }
+          ],
+          "totalBillableDuration": [
+            {
+              "meterType": "AzureIR",
+              "duration": 0.06666666666666667,
+              "unit": "DIUHours"
+            }
+          ]
+        },
+        "usedParallelCopies": 1,
+        "executionDetails": [
+          {
+            "source": {
+              "type": "AzureBlobFS"
+            },
+            "sink": {
+              "type": "AzureBlobFS"
+            },
+            "status": "Succeeded",
+            "start": "2026-02-13T06:19:56.4220566Z",
+            "duration": 16,
+            "usedDataIntegrationUnits": 4,
+            "usedParallelCopies": 1,
+            "profile": {
+              "queue": {
+                "status": "Completed",
+                "duration": 8
+              },
+              "transfer": {
+                "status": "Completed",
+                "duration": 6,
+                "details": {
+                  "listingSource": {
+                    "type": "AzureBlobFS",
+                    "workingDuration": 0
+                  },
+                  "readingFromSource": {
+                    "type": "AzureBlobFS",
+                    "workingDuration": 0
+                  },
+                  "writingToSink": {
+                    "type": "AzureBlobFS",
+                    "workingDuration": 0
+                  }
+                }
+              }
+            },
+            "detailedDurations": {
+              "queuingDuration": 8,
+              "transferDuration": 6
+            }
+          }
+        ],
+        "dataConsistencyVerification": {
+          "VerificationResult": "NotVerified"
+        },
+        "durationInQueue": {
+          "integrationRuntimeQueue": 0
+        }
+      },
+      "lineage": {
+        "type": "copy",
+        "sources": [
+          {
+            "type": "DelimitedTextSource",
+            "dataset": null
+          }
+        ],
+        "sinks": [
+          {
+            "rows_written": 2000,
+            "dataset": null
+          }
+        ],
+        "transformations": []
+      }
+    },
+    {
+      "activity_name": "CopyOrdersToSilver",
+      "activity_type": "Copy",
+      "status": "Succeeded",
+      "activity_run_start": "2026-02-13T06:19:55.603246+00:00",
+      "activity_run_end": "2026-02-13T06:20:14.801238+00:00",
+      "duration_seconds": 19.197,
+      "input": {
+        "source": {
+          "type": "DelimitedTextSource",
+          "storeSettings": {
+            "type": "AzureBlobFSReadSettings",
+            "recursive": false,
+            "enablePartitionDiscovery": false
+          }
+        },
+        "sink": {
+          "type": "ParquetSink",
+          "storeSettings": {
+            "type": "AzureBlobFSWriteSettings"
+          }
+        },
+        "translator": {
+          "type": "TabularTranslator",
+          "typeConversion": true,
+          "typeConversionSettings": {
+            "allowDataTruncation": true,
+            "treatBooleanAsNumber": false
+          }
+        },
+        "enableStaging": false
+      },
+      "output": {
+        "dataRead": 357498,
+        "dataWritten": 141745,
+        "filesRead": 1,
+        "filesWritten": 1,
+        "sourcePeakConnections": 1,
+        "sinkPeakConnections": 1,
+        "rowsRead": 5000,
+        "rowsCopied": 5000,
+        "copyDuration": 17,
+        "throughput": 51.071,
+        "errors": [],
+        "effectiveIntegrationRuntime": "AutoResolveIntegrationRuntime (East US)",
+        "usedDataIntegrationUnits": 4,
+        "billingReference": {
+          "activityType": "DataMovement",
+          "billableDuration": [
+            {
+              "meterType": "AzureIR",
+              "duration": 0.06666666666666667,
+              "unit": "DIUHours"
+            }
+          ],
+          "totalBillableDuration": [
+            {
+              "meterType": "AzureIR",
+              "duration": 0.06666666666666667,
+              "unit": "DIUHours"
+            }
+          ]
+        },
+        "usedParallelCopies": 1,
+        "executionDetails": [
+          {
+            "source": {
+              "type": "AzureBlobFS"
+            },
+            "sink": {
+              "type": "AzureBlobFS"
+            },
+            "status": "Succeeded",
+            "start": "2026-02-13T06:19:56.3722485Z",
+            "duration": 17,
+            "usedDataIntegrationUnits": 4,
+            "usedParallelCopies": 1,
+            "profile": {
+              "queue": {
+                "status": "Completed",
+                "duration": 8
+              },
+              "transfer": {
+                "status": "Completed",
+                "duration": 7,
+                "details": {
+                  "listingSource": {
+                    "type": "AzureBlobFS",
+                    "workingDuration": 0
+                  },
+                  "readingFromSource": {
+                    "type": "AzureBlobFS",
+                    "workingDuration": 0
+                  },
+                  "writingToSink": {
+                    "type": "AzureBlobFS",
+                    "workingDuration": 0
+                  }
+                }
+              }
+            },
+            "detailedDurations": {
+              "queuingDuration": 8,
+              "transferDuration": 7
+            }
+          }
+        ],
+        "dataConsistencyVerification": {
+          "VerificationResult": "NotVerified"
+        },
+        "durationInQueue": {
+          "integrationRuntimeQueue": 0
+        }
+      },
+      "lineage": {
+        "type": "copy",
+        "sources": [
+          {
+            "type": "DelimitedTextSource",
+            "dataset": null
+          }
+        ],
+        "sinks": [
+          {
+            "rows_written": 5000,
+            "dataset": null
+          }
+        ],
+        "transformations": []
+      }
+    }
+  ],
+  "lineage_graph": {
+    "nodes": [
+      {
+        "id": "CopyCustomersToSilver",
+        "type": "Copy",
+        "status": "Succeeded"
+      },
+      {
+        "id": null,
+        "type": "dataset",
+        "layer": "source"
+      },
+      {
+        "id": "CopyOrdersToSilver",
+        "type": "Copy",
+        "status": "Succeeded"
+      }
+    ],
+    "edges": [
+      {
+        "from": null,
+        "to": "CopyCustomersToSilver",
+        "type": "reads"
+      },
+      {
+        "from": "CopyCustomersToSilver",
+        "to": null,
+        "type": "writes"
+      },
+      {
+        "from": null,
+        "to": "CopyOrdersToSilver",
+        "type": "reads"
+      },
+      {
+        "from": "CopyOrdersToSilver",
+        "to": null,
+        "type": "writes"
+      }
+    ]
+  }
+}

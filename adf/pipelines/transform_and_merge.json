@@ -1,0 +1,120 @@
+{
+    "name": "transform_and_merge",
+    "properties": {
+        "description": "Transform and merge customer and order data from silver to gold layer",
+        "activities": [
+            {
+                "name": "CustomerOrderDataFlow",
+                "type": "ExecuteDataFlow",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataFlow": {
+                        "referenceName": "customer_order_merge",
+                        "type": "DataFlowReference"
+                    },
+                    "compute": {
+                        "coreCount": 8,
+                        "computeType": "General"
+                    },
+                    "traceLevel": "Fine"
+                }
+            },
+            {
+                "name": "CaptureLineageMetadata",
+                "type": "WebActivity",
+                "dependsOn": [
+                    {
+                        "activity": "CustomerOrderDataFlow",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "url": "https://management.azure.com/subscriptions/@{pipeline().parameters.subscriptionId}/resourceGroups/@{pipeline().parameters.resourceGroupName}/providers/Microsoft.DataFactory/factories/@{pipeline().DataFactory}/pipelineruns/@{pipeline().RunId}?api-version=2018-06-01",
+                    "method": "GET",
+                    "authentication": {
+                        "type": "MSI",
+                        "resource": "https://management.azure.com/"
+                    }
+                }
+            },
+            {
+                "name": "StoreLineageToADLS",
+                "type": "Copy",
+                "dependsOn": [
+                    {
+                        "activity": "CaptureLineageMetadata",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "RestSource",
+                        "httpRequestTimeout": "00:01:40",
+                        "requestInterval": "00.00:00:00.010",
+                        "requestMethod": "GET"
+                    },
+                    "sink": {
+                        "type": "JsonSink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings"
+                        },
+                        "formatSettings": {
+                            "type": "JsonWriteSettings"
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ds_lineage_source",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ds_lineage_sink",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "fileName": {
+                                "value": "@concat('lineage_', pipeline().RunId, '.json')",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                ]
+            }
+        ],
+        "parameters": {
+            "subscriptionId": {
+                "type": "string"
+            },
+            "resourceGroupName": {
+                "type": "string"
+            }
+        },
+        "annotations": [],
+        "lastPublishTime": "2026-02-13T05:38:05Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

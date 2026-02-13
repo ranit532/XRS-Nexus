@@ -1,0 +1,45 @@
+$schema: https://azuremlschemas.azureedge.net/promptflow/latest/Flow.schema.json
+inputs:
+  dataset_sample:
+    type: string
+    default: '[{"email":"test@example.com","age":25}]'
+  field_names:
+    type: string
+    default: '["email","age"]'
+  validation_type:
+    type: string
+    default: "comprehensive"
+outputs:
+  validation_result:
+    type: string
+    reference: ${aggregate_results.output}
+
+nodes:
+- name: pii_check
+  type: llm
+  source:
+    type: code
+    path: pii_validation.jinja2
+  inputs:
+    deployment_name: "gpt-4o"
+    dataset_sample: ${inputs.dataset_sample}
+    field_names: ${inputs.field_names}
+
+- name: quality_check
+  type: llm
+  source:
+    type: code
+    path: quality_validation.jinja2
+  inputs:
+    deployment_name: "gpt-4o"
+    dataset_sample: ${inputs.dataset_sample}
+
+- name: aggregate_results
+  type: python
+  source:
+    type: code
+    path: aggregate.py
+  inputs:
+    pii_result: ${pii_check.output}
+    quality_result: ${quality_check.output}
+    validation_type: ${inputs.validation_type}

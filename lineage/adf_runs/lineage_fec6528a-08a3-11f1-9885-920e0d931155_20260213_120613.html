@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADF Pipeline Lineage - ingest_synthetic_data</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0078d4 0%, #005a9e 100%);
+            color: white;
+            padding: 30px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .metadata-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .metadata-item .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+        
+        .metadata-item .value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .status-success {
+            color: #2e7d32;
+        }
+        
+        .status-failed {
+            color: #c62828;
+        }
+        
+        .diagram-container {
+            padding: 40px;
+            background: white;
+        }
+        
+        .diagram-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0078d4;
+        }
+        
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+        
+        .footer {
+            padding: 20px 30px;
+            background: #f5f5f5;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Data Pipeline Lineage</h1>
+            <div class="subtitle">Azure Data Factory - XRS NEXUS Platform</div>
+        </div>
+        
+        <div class="metadata">
+            <div class="metadata-item">
+                <div class="label">Pipeline Name</div>
+                <div class="value">ingest_synthetic_data</div>
+            </div>
+            <div class="metadata-item">
+                <div class="label">Run ID</div>
+                <div class="value" style="font-size: 14px;">fec6528a-08a3-11...</div>
+            </div>
+            <div class="metadata-item">
+                <div class="label">Status</div>
+                <div class="value status-succeeded">Succeeded</div>
+            </div>
+            <div class="metadata-item">
+                <div class="label">Duration</div>
+                <div class="value">30.91s</div>
+            </div>
+            <div class="metadata-item">
+                <div class="label">Start Time</div>
+                <div class="value" style="font-size: 14px;">2026-02-13T06:19:48</div>
+            </div>
+            <div class="metadata-item">
+                <div class="label">Captured At</div>
+                <div class="value" style="font-size: 14px;">2026-02-13T12:06:13</div>
+            </div>
+        </div>
+        
+        <div class="diagram-container">
+            <h2 class="diagram-title">📊 Data Flow Lineage</h2>
+            <div class="mermaid">
+flowchart LR
+    CopyCustomersToSilver["CopyCustomersToSilver<br/>📋 Copy"]:::copyStyle
+    unknown_node[("None<br/>📁 Source")]:::sourceStyle
+    CopyOrdersToSilver["CopyOrdersToSilver<br/>📋 Copy"]:::copyStyle
+    unknown_node -->|reads| CopyCustomersToSilver
+    CopyCustomersToSilver -->|writes| unknown_node
+    unknown_node -->|reads| CopyOrdersToSilver
+    CopyOrdersToSilver -->|writes| unknown_node
+
+    classDef sourceStyle fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef sinkStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef copyStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef transformStyle fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+            </div>
+        </div>
+        
+        <div class="footer">
+            Generated by XRS NEXUS Lineage Tracker | 2026-02-13 12:06:57
+        </div>
+    </div>
+    
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>

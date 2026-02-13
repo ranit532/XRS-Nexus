@@ -1,0 +1,180 @@
+{
+    "name": "ingest_synthetic_data",
+    "properties": {
+        "description": "Ingest synthetic datasets from bronze to silver layer with AI validation",
+        "activities": [
+            {
+                "name": "CopyCustomersToSilver",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 2,
+                    "retryIntervalInSeconds": 30
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false,
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "ParquetSink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings"
+                        },
+                        "formatSettings": {
+                            "type": "ParquetWriteSettings"
+                        }
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ds_bronze_customers",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ds_silver_customers",
+                        "type": "DatasetReference"
+                    }
+                ]
+            },
+            {
+                "name": "CopyOrdersToSilver",
+                "type": "Copy",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 2,
+                    "retryIntervalInSeconds": 30
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false,
+                            "enablePartitionDiscovery": false
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "ParquetSink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings"
+                        },
+                        "formatSettings": {
+                            "type": "ParquetWriteSettings"
+                        }
+                    },
+                    "enableStaging": false
+                },
+                "inputs": [
+                    {
+                        "referenceName": "ds_bronze_orders",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "ds_silver_orders",
+                        "type": "DatasetReference"
+                    }
+                ]
+            },
+            {
+                "name": "AIDataQualityValidation",
+                "type": "AzureFunctionActivity",
+                "dependsOn": [
+                    {
+                        "activity": "CopyCustomersToSilver",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    },
+                    {
+                        "activity": "CopyOrdersToSilver",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "functionName": "validate_data",
+                    "method": "POST",
+                    "body": {
+                        "datasets": [
+                            "customers",
+                            "orders"
+                        ],
+                        "layer": "silver",
+                        "validation_rules": [
+                            "check_nulls",
+                            "check_duplicates",
+                            "check_pii"
+                        ]
+                    }
+                },
+                "linkedServiceName": {
+                    "referenceName": "ls_ai_orchestration",
+                    "type": "LinkedServiceReference"
+                }
+            },
+            {
+                "name": "LogValidationResults",
+                "type": "SetVariable",
+                "dependsOn": [
+                    {
+                        "activity": "AIDataQualityValidation",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "variableName": "validation_status",
+                    "value": {
+                        "value": "@activity('AIDataQualityValidation').output.status",
+                        "type": "Expression"
+                    }
+                }
+            }
+        ],
+        "variables": {
+            "validation_status": {
+                "type": "String"
+            }
+        },
+        "annotations": [],
+        "lastPublishTime": "2026-02-13T05:38:05Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

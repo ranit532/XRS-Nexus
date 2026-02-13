@@ -137,6 +137,287 @@ The project includes a comprehensive set of **Microsoft Fabric** artifacts to de
 
 ---
 
+## 4.1. Azure Data Factory Pipeline Use Case
+
+### Overview
+In addition to the Microsoft Fabric-based architecture, this project includes a **cost-effective Azure Data Factory (ADF) implementation** that demonstrates:
+- **Medallion Architecture**: Bronze → Silver → Gold data layers
+- **AI-Powered Data Quality**: Automated validation using Azure Functions
+- **Data Lineage Tracking**: Complete traceability with interactive visualizations
+- **Enterprise Patterns**: Managed identity, secure credential management, monitoring
+
+**Cost**: ~$1.63/month (well within Azure free tier)
+
+### ADF Pipeline Architecture
+
+```mermaid
+flowchart LR
+    subgraph "Data Generation"
+        GEN[Synthetic Data<br/>Generator<br/>20,500 records]
+    end
+
+    subgraph "ADLS Gen2 Storage Layers"
+        BRONZE[(Bronze Layer<br/>Raw CSV<br/>customers, orders,<br/>products, transactions,<br/>events)]
+        SILVER[(Silver Layer<br/>Cleaned Parquet<br/>Schema validated)]
+        GOLD[(Gold Layer<br/>Analytics-Ready<br/>Aggregated)]
+        LINEAGE[(Lineage Store<br/>Metadata JSON)]
+    end
+
+    subgraph "Azure Data Factory"
+        direction TB
+        PIPE1[Ingest Pipeline<br/>Copy Activities<br/>CSV → Parquet]
+        PIPE2[Transform Pipeline<br/>Data Flows<br/>Join & Aggregate]
+    end
+
+    subgraph "AI Orchestration"
+        FUNC[Azure Function<br/>/validate-data]
+        AI[AI Validation<br/>• Null checks<br/>• Duplicates<br/>• PII detection]
+    end
+
+    subgraph "Monitoring & Lineage"
+        CAP[Lineage Capture<br/>ADF API]
+        VIZ[HTML Visualizer<br/>Mermaid Diagrams]
+        APPI[Application<br/>Insights]
+    end
+
+    GEN -->|Upload| BRONZE
+    BRONZE -->|Trigger| PIPE1
+    PIPE1 -->|Call| FUNC
+    FUNC -->|Validate| AI
+    AI -->|Results| PIPE1
+    PIPE1 -->|Write| SILVER
+    
+    SILVER -->|Transform| PIPE2
+    PIPE2 -->|Write| GOLD
+    
+    PIPE1 & PIPE2 -->|Metadata| CAP
+    CAP -->|Store| LINEAGE
+    LINEAGE -->|Generate| VIZ
+    PIPE1 & PIPE2 -->|Logs| APPI
+
+    style BRONZE fill:#cd7f32,stroke:#8b4513,color:#fff
+    style SILVER fill:#c0c0c0,stroke:#808080,color:#000
+    style GOLD fill:#ffd700,stroke:#daa520,color:#000
+    style FUNC fill:#0078d4,stroke:#005a9e,color:#fff
+    style VIZ fill:#00d4aa,stroke:#00a884,color:#fff
+```
+
+### Data Flow Details
+
+```mermaid
+sequenceDiagram
+    participant Gen as Data Generator
+    participant Bronze as Bronze Layer
+    participant ADF as ADF Pipeline
+    participant AI as AI Validation
+    participant Silver as Silver Layer
+    participant Gold as Gold Layer
+    participant Lin as Lineage Store
+
+    Gen->>Bronze: Upload 20,500 records<br/>(5 datasets: CSV + JSON)
+    
+    Note over ADF: Pipeline: ingest_synthetic_data
+    ADF->>Bronze: Read customers.csv
+    ADF->>Bronze: Read orders.csv
+    
+    ADF->>AI: POST /validate-data<br/>{datasets: [customers, orders]}
+    AI-->>ADF: {status: warning,<br/>checks: [nulls, duplicates, PII]}
+    
+    ADF->>Silver: Write customers.parquet<br/>(Snappy compressed)
+    ADF->>Silver: Write orders.parquet
+    
+    Note over ADF: Pipeline: transform_and_merge
+    ADF->>Silver: Read customers + orders
+    ADF->>Gold: Write customer_analytics.parquet<br/>(Joined & aggregated)
+    
+    ADF->>Lin: Capture pipeline metadata
+    Lin->>Lin: Generate lineage graph
+    Lin-->>Lin: Create HTML visualization
+```
+
+### Deployed Components
+
+| Component | Status | Description |
+|-----------|--------|-------------|
+| **ADLS Gen2 Containers** | ✅ Deployed | `bronze`, `silver`, `gold`, `synthetic-data`, `lineage` |
+| **ADF Linked Services** | ✅ Deployed | Connections to all storage layers (managed identity) |
+| **ADF Datasets** | ✅ Deployed | 5 datasets (CSV + Parquet formats) |
+| **ADF Pipeline** | ✅ Deployed | `ingest_synthetic_data` (tested successfully) |
+| **Synthetic Data** | ✅ Uploaded | 20,500 records across 5 datasets |
+| **AI Validation** | ⚠️ Optional | Azure Function endpoint (code ready) |
+| **Lineage Tracking** | ✅ Ready | Capture and visualization scripts |
+
+### 5. Real-Time AI Validation Architecture
+
+To enable real-time, intelligent validation within ADF pipelines without direct ADF-to-PromptFlow connectivity, we implemented a **Function-as-a-Proxy** pattern.
+
+#### Architecture Flow
+```mermaid
+sequenceDiagram
+    participant ADF as ADF Pipeline
+    participant Func as Azure Function (Python)
+    participant PF as Prompt Flow (Azure AI)
+    participant LLM as GPT-4o Model
+
+    ADF->>Func: POST /validate-data (Sample Data)
+    Note over Func: api-layer/ai_validator.py
+    
+    Func->>PF: Invoke Flow "pii_detection"
+    
+    alt GPT Quota Available
+        PF->>LLM: Analyze Payload
+        LLM-->>PF: {has_pii: true, fields: [email]}
+        PF-->>Func: Intelligent Result
+        Func-->>ADF: {status: warning, ai_powered: true}
+    else GPT Quota Exceeded (Fallback)
+        PF--xFunc: Error (429/404)
+        Func->>Func: Run Enhanced Regex Patterns
+        Func-->>ADF: {status: warning, ai_powered: false}
+    end
+```
+
+#### Why this approach?
+1.  **Overcomes ADF Limitations**: ADF cannot natively call Prompt Flow endpoints with complex payloads easily.
+2.  **Encapsulation**: The Azure Function acts as a "Smart Gateway", handling authentication, data sampling, and fallback logic.
+3.  **Resilience**: If Azure AI services are down or quota is exceeded, the Function falls back to robust pattern matching, ensuring the pipeline never fails.
+4.  **Cost Control**: We can cache results or limit AI calls within the Function logic.
+
+### Quick Start - ADF Pipeline
+
+#### 1. Generate and Upload Data
+```bash
+# Generate synthetic datasets
+python3 synthetic-dataset/generate_adf_datasets.py
+
+# Upload to ADLS Gen2
+export AZURE_STORAGE_ACCOUNT_NAME=xrsnexusdevstg2yd1hw
+python3 scripts/upload_to_adls.py
+```
+
+#### 2. Deploy Infrastructure
+```bash
+cd infra
+terraform init
+terraform plan -out adf.tfplan
+terraform apply adf.tfplan
+```
+
+#### 3. Run Pipeline
+```bash
+# Trigger pipeline via Azure CLI
+az datafactory pipeline create-run \
+  --resource-group xrs-nexus-dev-rg \
+  --factory-name xrs-nexus-dev-adf-2yd1hw \
+  --name ingest_synthetic_data
+
+# Or use the testing script
+python3 scripts/test_adf_pipeline.py --pipeline ingest_synthetic_data
+```
+
+#### 4. Capture Lineage
+```bash
+# Get run ID from previous step
+RUN_ID="<your-run-id>"
+
+# Capture lineage metadata
+python3 telemetry-lineage/adf_lineage_capture.py $RUN_ID
+
+# Generate visualization
+python3 telemetry-lineage/visualize_lineage.py lineage/adf_runs/lineage_*.json
+
+# Open in browser
+open lineage/adf_runs/lineage_*.html
+```
+
+### Test Results
+
+**Latest Pipeline Run**:
+- **Status**: ✅ Succeeded
+- **Duration**: 30.9 seconds
+- **Activities**: 2 copy activities (customers, orders)
+- **Data Processed**: 7,000 records (2,000 customers + 5,000 orders)
+- **Output**: Parquet files in silver layer with Snappy compression
+
+**Verification**:
+```bash
+# Check silver layer contents
+az storage fs directory list -f silver \
+  --account-name xrsnexusdevstg2yd1hw \
+  --auth-mode login
+
+# Output:
+# customers/
+# orders/
+```
+
+### AI Validation Features
+
+The AI orchestration layer provides:
+
+1. **Null Value Detection**: Flags fields with >5% null values
+2. **Duplicate Detection**: Identifies duplicate primary keys
+3. **PII Scanning**: Detects email, phone, SSN patterns
+4. **Data Type Validation**: Ensures schema compliance
+5. **Recommendations**: Suggests data masking, encryption, or cleansing
+
+**Example Response**:
+```json
+{
+  "status": "warning",
+  "validation_results": [{
+    "dataset": "silver/customers",
+    "checks": [
+      {
+        "check_name": "pii_detection",
+        "status": "warning",
+        "details": {"pii_fields_detected": ["email", "phone"]},
+        "recommendation": "Apply data masking or encryption"
+      }
+    ]
+  }]
+}
+```
+
+### Lineage Visualization
+
+The lineage capture system generates interactive HTML visualizations showing:
+- **Data Flow**: Visual graph of transformations
+- **Activity Details**: Individual pipeline activities
+- **Metadata**: Run ID, status, duration, timestamps
+- **Color-Coded Nodes**: Sources (blue), sinks (purple), transformations (orange)
+
+**Sample Lineage Graph**:
+```mermaid
+graph LR
+    DS1[ds_bronze_customers<br/>CSV Source]
+    DS2[ds_bronze_orders<br/>CSV Source]
+    ACT1[CopyCustomersToSilver<br/>Copy Activity]
+    ACT2[CopyOrdersToSilver<br/>Copy Activity]
+    DS3[ds_silver_customers<br/>Parquet Sink]
+    DS4[ds_silver_orders<br/>Parquet Sink]
+
+    DS1 -->|reads| ACT1
+    ACT1 -->|writes| DS3
+    DS2 -->|reads| ACT2
+    ACT2 -->|writes| DS4
+
+    style DS1 fill:#4a90e2,stroke:#2e5c8a,color:#fff
+    style DS2 fill:#4a90e2,stroke:#2e5c8a,color:#fff
+    style DS3 fill:#9b59b6,stroke:#6c3483,color:#fff
+    style DS4 fill:#9b59b6,stroke:#6c3483,color:#fff
+    style ACT1 fill:#e67e22,stroke:#a04000,color:#fff
+    style ACT2 fill:#e67e22,stroke:#a04000,color:#fff
+```
+
+### Documentation
+
+- **Deployment Guide**: [ADF_DEPLOYMENT_GUIDE.md](./ADF_DEPLOYMENT_GUIDE.md)
+- **Walkthrough**: [walkthrough.md](./.gemini/antigravity/brain/2e618bc4-4cb3-4538-976b-c80bc0c991bd/walkthrough.md)
+- **Implementation Plan**: [implementation_plan.md](./.gemini/antigravity/brain/2e618bc4-4cb3-4538-976b-c80bc0c991bd/implementation_plan.md)
+- **Deployment Status**: [DEPLOYMENT_STATUS.md](./DEPLOYMENT_STATUS.md)
+
+
+
 ## 5. Comprehensive Deployment Guide
 
 Follow these steps to deploy the platform from scratch.
@@ -381,7 +662,7 @@ If Microsoft Fabric is not available in your tenant, the solution can be deploye
 flowchart TD
     subgraph "Ingestion"
         Sources[SAP / Salesforce] --> ADF[Azure Data Factory]
-        ADF --> ADLS[ADLS Gen2 (Bronze)]
+        ADF --> ADLS["ADLS Gen2 (Bronze)"]
     end
 
     subgraph "Processing & AI"
