@@ -472,8 +472,81 @@ graph LR
 
 - **Deployment Guide**: [ADF_DEPLOYMENT_GUIDE.md](./ADF_DEPLOYMENT_GUIDE.md)
 - **Walkthrough**: [walkthrough.md](./.gemini/antigravity/brain/2e618bc4-4cb3-4538-976b-c80bc0c991bd/walkthrough.md)
-- **Implementation Plan**: [implementation_plan.md](./.gemini/antigravity/brain/2e618bc4-4cb3-4538-976b-c80bc0c991bd/implementation_plan.md)
-- **Deployment Status**: [DEPLOYMENT_STATUS.md](./DEPLOYMENT_STATUS.md)
+- **Implementation Plan**: [implementation_plan.md](./.gemini/antigravity/brain/2e618bc4-4cb3-4538-976b-c80bc0c991bd/implementation_plan.md)- **Deployment Status**: [DEPLOYMENT_STATUS.md](./DEPLOYMENT_STATUS.md)
+
+---
+
+## 9. End-to-End Runtime Simulation & Testing Guide
+
+This section provides steps to simulate or execute the entire data lineage flow: **Synthetic Dataset -> ADLS -> ADF -> Azure Functions -> Ollama AI.**
+
+### 9.1. Real-Time Dashboard Visualization
+The "NEXUS AI Pipeline Monitor" provides a cutting-edge, glassmorphic UI to visualize the end-to-end journey.
+
+#### To Run the Dashboard:
+1. **Start the Backend Bridge**:
+   ```bash
+   # Ensure dependencies are installed
+   pip install flask flask-cors azure-identity azure-mgmt-datafactory python-dotenv
+   # Start the bridge (Port 5001)
+   python3 dashboard_bridge.py
+   ```
+2. **Start the Frontend**:
+   ```bash
+   cd dashboard
+   npm install
+   npm run dev
+   ```
+3. **Trigger Simulation**:
+   Open the UI and click **"RUN RUNTIME SIMULATION"**. This will trigger a live, step-by-step lineage flow:
+   - **Step 1: Synthetic** (Faker data generation)
+   - **Step 2: Bronze** (Ingestion to ADLS Landing)
+   - **Step 3: Silver** (ADF Transformation & Dedup)
+   - **Step 4: AI Validation** (Ollama PHI-3 PII Analysis)
+   - **Step 5: Gold** (Analytics Ready Integration)
+
+### 9.2. Manual Testing Flow (Production-Ready)
+
+#### 1. Setup Local AI Tunnel (Ollama)
+If using local AI validation, spin up an `ngrok` tunnel for the Azure Function to reach your local machine:
+```bash
+# Start Ollama locally
+ollama run phi3
+
+# Start ngrok tunnel (ensure Ollama is on 11434)
+ngrok http 11434 --host-header="localhost:11434"
+# Copy the Forwarding URL (e.g., https://xyz.ngrok-free.app)
+```
+
+#### 2. Generate and Push Synthetic Data
+```bash
+# Generate the 20,500 record dataset
+python3 synthetic-dataset/generate_adf_datasets.py
+
+# Push to ADLS Bronze Layer
+python3 scripts/upload_to_adls.py
+```
+
+#### 3. Trigger & Monitor the Pipeline
+You can trigger the ADF pipeline via `curl` through the API layer or using Azure CLI:
+```bash
+# Trigger via Azure CLI
+az datafactory pipeline create-run \
+  --resource-group xrs-nexus-dev-rg \
+  --factory-name xrs-nexus-dev-adf-2yd1hw \
+  --name ingest_synthetic_data
+```
+
+#### 4. Verify AI Validation & Lineage
+- **AI Thoughts**: Observe the "Live Inference Stream" in the dashboard. It will show if PII was detected (e.g., `PII Detected: customer_email`).
+- **Data Lineage**: Check the lineage graph to see the transition from Bronze (CSV) -> Silver (Parquet) -> Gold (Validated Analytics).
+- **Storage Check**:
+  ```bash
+  # Check Gold layer for final validated data
+  az storage fs directory list -f gold --account-name xrsnexusdevstg2yd1hw --auth-mode login
+  ```
+
+---
 
 
 

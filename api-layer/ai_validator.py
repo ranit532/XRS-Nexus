@@ -3,7 +3,12 @@ import os
 import logging
 from azure.identity import DefaultAzureCredential
 from azure.core.exceptions import ResourceNotFoundError
-from promptflow.azure import PFClient
+try:
+    from promptflow.azure import PFClient
+    HAS_PROMPTFLOW = True
+except ImportError:
+    HAS_PROMPTFLOW = False
+
 from openai import AzureOpenAI, OpenAI
 from huggingface_hub import InferenceClient
 
@@ -19,9 +24,9 @@ class PromptFlowValidator:
         # Determine provider (azure, openai, huggingface, ollama)
         self.sys_provider = os.getenv("AI_PROVIDER", "azure").lower()
         
-        # Initialize Prompt Flow client (only if using Azure)
+        # Initialize Prompt Flow client (only if using Azure and available)
         self.pf_client = None
-        if self.sys_provider == "azure":
+        if self.sys_provider == "azure" and HAS_PROMPTFLOW:
             try:
                 self.pf_client = PFClient(
                     credential=self.credential,
@@ -32,6 +37,8 @@ class PromptFlowValidator:
             except Exception as e:
                 logging.warning(f"Could not initialize PFClient: {e}")
                 self.pf_client = None
+        elif self.sys_provider == "azure" and not HAS_PROMPTFLOW:
+             logging.warning("Prompt Flow libraries not installed. Azure path will use Direct SDK fallback.")
 
     def validate_pii(self, dataset_sample: list) -> dict:
         """
@@ -131,7 +138,15 @@ class PromptFlowValidator:
             
             prompt = f"""
             Analyze the following data sample for PII (Personally Identifiable Information).
-            Return JSON with keys: has_pii (bool), pii_fields (list), classification (str).
+            Be extremely thorough. 
+            Return a JSON object with:
+            - has_pii (boolean)
+            - pii_fields (list of strings)
+            - classification (string: Public, Internal, Confidential, Restricted)
+            - confidence (float between 0 and 1)
+            - risk_level (string: Low, Medium, High, Critical)
+            - pii_details (list of objects with keys: field, type, confidence, recommendation)
+            - scan_stats (object with keys: records_scanned, fields_scanned)
             
             Data: {json.dumps(dataset_sample)}
             """
@@ -139,22 +154,33 @@ class PromptFlowValidator:
             response = client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": "You are a data privacy expert. Return only valid JSON."},
+                    {"role": "system", "content": "You are a professional Data Privacy Auditor. You analyze datasets for leaked PII. You always speak in valid JSON."},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.1,
-                response_format={"type": "json_object"}
+                response_format={ "type": "json_object" }
             )
             
+            # Parse result
             content = response.choices[0].message.content
             pii_report = json.loads(content)
+            
+            # Ensure scan_stats existence
+            if "scan_stats" not in pii_report:
+                pii_report["scan_stats"] = {
+                    "records_scanned": len(dataset_sample),
+                    "fields_scanned": len(dataset_sample[0].keys()) if dataset_sample else 0
+                }
             
             return {
                 "has_pii": pii_report.get("has_pii", False),
                 "pii_fields": pii_report.get("pii_fields", []),
-                "classification": pii_report.get("classification", "Public"),
+                "pii_details": pii_report.get("pii_details", []),
+                "classification": pii_report.get("classification", "Internal"),
+                "confidence": pii_report.get("confidence", 0.85),
+                "risk_level": pii_report.get("risk_level", "Low"),
+                "scan_stats": pii_report["scan_stats"],
                 "status": "warning" if pii_report.get("has_pii") else "passed",
-                "recommendations": ["Apply data masking"] if pii_report.get("has_pii") else [],
                 "ai_powered": True
             }
         except Exception as e:
@@ -270,19 +296,46 @@ class PromptFlowValidator:
              return self._fallback_pii_detection(dataset_sample)
 
     def _fallback_pii_detection(self, dataset_sample: list) -> dict:
-        """Fallback PII detection using keywords"""
-        pii_keywords = ['email', 'phone', 'ssn', 'credit_card', 'address', 'name']
+        """Fallback PII detection using keywords with richer details"""
+        pii_keywords = {
+            'email': ('Contact Info', 'High'),
+            'phone': ('Contact Info', 'Medium'),
+            'ssn': ('Government ID', 'Critical'),
+            'credit_card': ('Financial', 'Critical'),
+            'address': ('Location', 'Medium'),
+            'name': ('Identity', 'Low')
+        }
+        pii_details = []
         pii_fields = []
         
         if dataset_sample:
             for field in dataset_sample[0].keys():
-                if any(keyword in field.lower() for keyword in pii_keywords):
-                    pii_fields.append(field)
+                for kw, (p_type, risk) in pii_keywords.items():
+                    if kw in field.lower():
+                        pii_fields.append(field)
+                        pii_details.append({
+                            "field": field,
+                            "type": p_type,
+                            "confidence": 0.95,
+                            "risk": risk,
+                            "recommendation": f"Mask {field} using SHA-256"
+                        })
+                        break
+        
+        num_records = len(dataset_sample) if dataset_sample else 0
+        num_fields = len(dataset_sample[0].keys()) if dataset_sample else 0
         
         return {
             "has_pii": len(pii_fields) > 0,
             "pii_fields": pii_fields,
+            "pii_details": pii_details,
             "classification": "Confidential" if pii_fields else "Public",
+            "confidence": 1.0 if pii_fields else 0.5,
+            "risk_level": "High" if pii_fields else "Low",
+            "scan_stats": {
+                "records_scanned": num_records,
+                "fields_scanned": num_fields
+            },
             "status": "warning" if pii_fields else "passed",
             "recommendations": ["Apply data masking"] if pii_fields else []
         }
@@ -394,3 +447,31 @@ class PromptFlowValidator:
         except Exception as e:
             logging.error(f"OpenAI Standard validation failed: {e}")
             return self._fallback_pii_detection(dataset_sample)
+
+if __name__ == "__main__":
+    # Simple CLI for dashboard/testing
+    import sys
+    validator = PromptFlowValidator()
+    
+    print("🛠️ Starting AI Data Validation (Ollama/Azure)...")
+    
+    # Sample data for validation
+    sample_data = [
+        {"id": 1, "name": "Ranit Sinha", "email": "ranit@example.com", "phone": "+91-9876543210", "city": "Bangalore"},
+        {"id": 2, "name": "John Doe", "email": "john.doe@notreal.com", "phone": "555-0199", "city": "Seattle"}
+    ]
+    
+    print(f"📊 Analyzing {len(sample_data)} sample records from Silver layer...")
+    
+    results = validator.validate_data_quality(sample_data, list(sample_data[0].keys()))
+    
+    print(f"🔍 PII Detection Result: {'🚨 PII DETECTED' if results['pii_validation']['has_pii'] else '✅ NO PII FOUND'}")
+    if results['pii_validation']['has_pii']:
+        print(f"🚩 Flagged Fields: {', '.join(results['pii_validation']['pii_fields'])}")
+        print(f"🛡️ Recommendation: {results['pii_validation']['recommendations'][0]}")
+    
+    print(f"📈 Quality Status: {results['status'].upper()}")
+    print(f"✨ Validation Complete via {validator.sys_provider.upper()}.")
+    
+    # Output JSON for potential parsing
+    print(json.dumps(results))
