@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import datetime
 from typing import Any, Dict, List, Optional
 
 import azure.functions as func
@@ -232,13 +233,15 @@ def validate_data(req: func.HttpRequest) -> func.HttpResponse:
                 field_names=list(sample_data[0].keys())
             )
             
+            pii_val = ai_result.get("pii_validation", {})
+            
             result = {
                 "dataset": f"{layer}/{dataset}",
                 "status": ai_result.get("status", "passed"),
                 "checks": ai_result.get("quality_checks", []),
-                "pii_validation": ai_result.get("pii_validation", {}),
-                "ai_powered": True,
-                "timestamp": "2026-02-13T05:38:05Z"
+                "pii_validation": pii_val,
+                "ai_powered": pii_val.get("ai_powered", False),
+                "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
             }
             
             validation_results.append(result)
@@ -267,7 +270,7 @@ def validate_data(req: func.HttpRequest) -> func.HttpResponse:
                     }
                 ],
                 "ai_powered": False,
-                "timestamp": "2026-02-13T05:38:05Z"
+                "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
             }
             
             # Simulate PII detection for customer dataset
@@ -294,7 +297,7 @@ def validate_data(req: func.HttpRequest) -> func.HttpResponse:
     response = {
         "status": overall_status,
         "validation_results": validation_results,
-        "timestamp": "2026-02-13T05:38:05Z"
+        "timestamp": datetime.datetime.utcnow().isoformat() + "Z"
     }
     
     logging.info(f"Validation complete: {overall_status}")

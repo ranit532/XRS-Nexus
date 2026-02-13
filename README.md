@@ -281,6 +281,66 @@ sequenceDiagram
 3.  **Resilience**: If Azure AI services are down or quota is exceeded, the Function falls back to robust pattern matching, ensuring the pipeline never fails.
 4.  **Cost Control**: We can cache results or limit AI calls within the Function logic.
 
+### 5.1. Cloud Agnostic AI Configuration
+
+The platform supports a **Provider Agnostic** architecture, allowing you to switch between **Azure OpenAI** (default) and **Standard OpenAI** (or other compatible APIs) by simply changing environment variables.
+
+#### Configuration Options
+
+| Provider | Required Environment Variables | Description |
+|:---------|:-------------------------------|:------------|
+| **Azure OpenAI** (Default) | `AI_PROVIDER=azure`<br>`AZURE_OPENAI_ENDPOINT`<br>`AZURE_OPENAI_API_KEY`<br>`AZURE_OPENAI_DEPLOYMENT_NAME` | Uses your private Azure OpenAI deployment (Secure, Compliant). |
+| **Standard OpenAI** | `AI_PROVIDER=openai`<br>`OPENAI_API_KEY`<br>`OPENAI_MODEL` (optional, default: gpt-3.5-turbo) | Uses public OpenAI API directly (Flexible, Latest Models). |
+| **Hugging Face** | `AI_PROVIDER=huggingface`<br>`HF_API_KEY`<br>`HF_MODEL` | Uses Hugging Face Inference API (Mistral/Phi-3). |
+| **Ollama (Local)** | `AI_PROVIDER=ollama`<br>`OLLAMA_BASE_URL` (Ngrok URL)<br>`OLLAMA_MODEL` | Uses your local machine for AI inference (Cost-effective, Private). |
+
+To switch providers, simply update the **App Settings** in the Azure Function App.
+
+### 5.2. Hybrid Cloud/Local AI (Ollama Demo)
+
+This project supports a unique **Hybrid AI** architecture where high-volume data validation is handled by a local AI model (Ollama) while the orchestration remains in the Azure Cloud. This bypasses cloud quotas and eliminates costs during development/demos.
+
+#### End-to-End Hybrid Flow
+```mermaid
+flowchart TD
+    subgraph "Local Environment (Developer Laptop)"
+        DATA_GEN[synthetic-dataset/<br/>generate_adf_datasets.py]
+        OLLAMA[Ollama Server<br/>model: phi3]
+        NGROK[Ngrok/Tunneling<br/>--host-header rewrite]
+    end
+
+    subgraph "Azure Cloud (PaaS)"
+        STG[(ADLS Gen2<br/>Bronze/Silver/Gold)]
+        ADF[Azure Data Factory]
+        FUNC[Azure Function<br/>AI Validator]
+    end
+
+    %% Flow Steps
+    DATA_GEN -->|1. Uploads CSV| STG
+    STG -->|2. Trigger| ADF
+    ADF -->|3. POST Payload| FUNC
+    
+    subgraph "Hybrid AI Loop"
+        FUNC -->|4. OpenAI Client Call| NGROK
+        NGROK -->|5. Forward Port 11434| OLLAMA
+        OLLAMA -->|6. PII Analysis Result| NGROK
+        NGROK -->|7. Return JSON| FUNC
+    end
+
+    FUNC -->|8. Flag PII / Validate| ADF
+    ADF -->|9. Write Parquet| STG
+    
+    style OLLAMA fill:#f9f,stroke:#333
+    style FUNC fill:#0078d4,color:#fff
+    style NGROK fill:#6c5ce7,color:#fff
+    style ADF fill:#0078d4,color:#fff
+```
+
+#### Key Technical Bypasses Implemented:
+1.  **Ngrok Browser Bypass**: Azure Function automatically sends `ngrok-skip-browser-warning: true` to avoid the manual intervention page.
+2.  **Host-Header Rewrite**: Configured the tunnel with `--host-header="localhost:11434"` to satisfy Ollama's local security policy.
+3.  **Agnostic Client**: Uses the `OpenAI` Python SDK pointing to the local tunnel, making the code 100% compatible with both Cloud and Local models.
+
 ### Quick Start - ADF Pipeline
 
 #### 1. Generate and Upload Data
