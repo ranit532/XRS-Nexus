@@ -146,7 +146,6 @@ In addition to the Microsoft Fabric-based architecture, this project includes a 
 - **Data Lineage Tracking**: Complete traceability with interactive visualizations
 - **Enterprise Patterns**: Managed identity, secure credential management, monitoring
 
-**Cost**: ~$1.63/month (well within Azure free tier)
 
 ### ADF Pipeline Architecture
 
@@ -667,7 +666,7 @@ flowchart TD
 
     subgraph "Processing & AI"
         ADLS --> DB[Azure Databricks]
-        DB -->|Spark ETL| ADLS_Silver[ADLS Gen2 (Silver)]
+        DB -->|Spark ETL| ADLS_Silver["ADLS Gen2 (Silver)"]
         DB <-->|AI Skills| PF[Prompt Flow]
     end
 
