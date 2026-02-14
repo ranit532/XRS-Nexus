@@ -309,9 +309,9 @@ def run_script(command, action_name):
                 if last_json_output:
                     unified_progress["ai_insights"] = last_json_output.get("pii_validation")
                 
-                # SPECIAL CHAINING: If AI Validation succeeds, mark GOLD as Succeeded too (Integration complete)
+                # SPECIAL CHAINING: AI Validation is done, but GOLD waits for manual approval.
                 if action_name == "AI Validation":
-                    unified_progress["GOLD"] = "Succeeded"
+                    print("AI Validation complete. Waiting for user approval to push to Gold.")
         else:
             action_status["error"] = f"Action failed with exit code {process.returncode}"
             action_status["logs"].append(f"❌ {action_name} Failed (Exit Code: {process.returncode})")
@@ -386,6 +386,72 @@ def trigger_validate():
     thread = threading.Thread(target=run_script, args=(["python3", "api-layer/ai_validator.py"], "AI Validation"))
     thread.start()
     return jsonify({"status": "started", "action": "AI Validation"})
+
+@app.route('/api/pipeline/approve', methods=['POST'])
+def approve_gold_push():
+    """Manually approves the data push to Gold layer"""
+    global unified_progress
+    
+    if unified_progress["AI_VALIDATION"] != "Succeeded":
+        return jsonify({"status": "error", "message": "Cannot push to Gold. AI Validation not complete."}), 400
+        
+    unified_progress["GOLD"] = "Succeeded"
+    print("--- User Approved Data Push to Gold Layer ---")
+    
+    # Simulate file move -> REAL MOVEMENT
+    action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] 👤 User Approved: Pushing validated data to Gold Storage...")
+    
+    try:
+        from azure.storage.blob import BlobServiceClient
+        import os
+        import json
+        
+        # Azure Config
+        connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+        container_name = "gold"
+        
+        if not connection_string:
+            raise ValueError("Missing AZURE_STORAGE_CONNECTION_STRING in .env")
+            
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        container_client = blob_service_client.get_container_client(container_name)
+        
+        # Ensure container exists
+        if not container_client.exists():
+            container_client.create_container()
+
+        # Retrieve MASKED DATA from AI output
+        masked_data = unified_progress.get("ai_insights", {}).get("masked_data")
+        
+        if masked_data:
+            # 1. Write masked data to a temporary file
+            gold_file_name = "gold_customers.json"
+            gold_file_path = f"data/gold/{gold_file_name}"
+            
+            # Ensure local gold dir exists
+            os.makedirs("data/gold", exist_ok=True)
+            
+            with open(gold_file_path, "w") as f:
+                json.dump(masked_data, f, indent=2)
+                
+            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] 🔒 Generated {gold_file_name} with {len(masked_data)} masked records.")
+            
+            # 2. Upload MASKED file to Azure
+            blob_name = f"analytics/ready/{gold_file_name}"
+            with open(gold_file_path, "rb") as data:
+                container_client.upload_blob(name=blob_name, data=data, overwrite=True)
+            
+            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ☁️ Uploaded MASKED data to Azure gold/{blob_name}")
+            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Data pushed to Azure container 'gold/analytics/ready'")
+            
+        else:
+            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ No masked data found in AI insights. pushing nothing.")
+            
+    except Exception as e:
+        print(f"Error moving files: {e}")
+        action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ Azure upload failed: {e}")
+    
+    return jsonify({"status": "success", "action": "Gold Push"})
 
 @app.route('/api/pipeline/status')
 def get_action_status():

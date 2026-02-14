@@ -165,22 +165,34 @@ const Dashboard = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-center">
+            {/* CONFIRMATION ACTION BUTTON */}
+            {unifiedProgress.AI_VALIDATION === 'Succeeded' && unifiedProgress.GOLD !== 'Succeeded' && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => triggerAction('approve')}
+                className="px-6 py-2 bg-green-500 text-white rounded-xl shadow-lg shadow-green-500/20 text-xs font-black tracking-widest uppercase flex items-center gap-2"
+              >
+                <FileCheck size={16} /> Confirm & Push to Gold
+              </motion.button>
+            )}
+
+            <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-center hidden md:block">
               <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Confidence</p>
               <p className="text-sm font-black text-blue-600">{(confidence * 100).toFixed(0)}%</p>
             </div>
-            <div className={`px-4 py-2 border rounded-xl text-center ${risk_level === 'Critical' || risk_level === 'High' ? 'bg-red-50 border-red-100 text-red-600' : 'bg-green-50 border-green-100 text-green-600'}`}>
+            <div className={`px-4 py-2 border rounded-xl text-center hidden md:block ${risk_level === 'Critical' || risk_level === 'High' ? 'bg-red-50 border-red-100 text-red-600' : 'bg-green-50 border-green-100 text-green-600'}`}>
               <p className="text-[8px] font-bold opacity-60 uppercase tracking-widest">Risk Level</p>
               <p className="text-sm font-black">{risk_level || 'Low'}</p>
             </div>
-            <div className="px-4 py-2 bg-purple-50 border border-purple-100 rounded-xl text-center">
+            <div className="px-4 py-2 bg-purple-50 border border-purple-100 rounded-xl text-center hidden md:block">
               <p className="text-[8px] font-bold text-purple-400 uppercase tracking-widest">Class</p>
               <p className="text-sm font-black text-purple-600">{classification || 'Internal'}</p>
             </div>
           </div>
         </div>
 
-        {/* Scan Stats Grid */}
+        {/* Scan Stats Grid - Fixed Overlap */}
         <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
             <p className="text-[9px] font-bold text-slate-400 uppercase">Records Scanned</p>
@@ -188,7 +200,13 @@ const Dashboard = () => {
           </div>
           <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
             <p className="text-[9px] font-bold text-slate-400 uppercase">Fields Analyzed</p>
-            <p className="text-xl font-black text-slate-700">{scan_stats?.fields_scanned || 0}</p>
+            <p className="text-xs font-bold text-slate-700 mt-1 break-words">
+              {Array.isArray(scan_stats?.fields_scanned)
+                ? scan_stats.fields_scanned.length > 3
+                  ? `${scan_stats.fields_scanned.slice(0, 3).join(', ')} +${scan_stats.fields_scanned.length - 3}`
+                  : scan_stats.fields_scanned.join(', ')
+                : scan_stats?.fields_scanned || 0}
+            </p>
           </div>
           <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
             <p className="text-[9px] font-bold text-slate-400 uppercase">PII Flagged</p>
@@ -196,7 +214,7 @@ const Dashboard = () => {
           </div>
           <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100">
             <p className="text-[9px] font-bold text-slate-400 uppercase">Policy Applied</p>
-            <p className="text-sm font-black text-blue-600">GDPR / HIPAA (Local)</p>
+            <p className="text-xs font-black text-blue-600 mt-1">GDPR / HIPAA (Local)</p>
           </div>
         </div>
 

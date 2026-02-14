@@ -12,8 +12,24 @@ except ImportError:
 from openai import AzureOpenAI, OpenAI
 from huggingface_hub import InferenceClient
 
+
+import hashlib
+
 class PromptFlowValidator:
     """Validates data using deployed Prompt Flows, Azure OpenAI, Standard OpenAI, Hugging Face, or Ollama"""
+
+    def mask_pii(self, dataset: list, pii_fields: list) -> list:
+        """Applies SHA-256 masking to flagged PII fields"""
+        import copy
+        masked_data = copy.deepcopy(dataset)
+        
+        for row in masked_data:
+            for field in pii_fields:
+                if field in row and row[field]:
+                    # Create SHA-256 hash
+                    row[field] = hashlib.sha256(str(row[field]).encode()).hexdigest()
+        
+        return masked_data
     
     def __init__(self):
         self.credential = DefaultAzureCredential()
@@ -182,7 +198,8 @@ class PromptFlowValidator:
                 "scan_stats": pii_report["scan_stats"],
                 "status": "warning" if pii_report.get("has_pii") else "passed",
                 "recommendations": ["Apply data masking", "Encrypt sensitive fields"] if pii_report.get("has_pii") else [],
-                "ai_powered": True
+                "ai_powered": True,
+                "masked_data": self.mask_pii(dataset_sample, pii_report.get("pii_fields", [])) if pii_report.get("has_pii") else dataset_sample
             }
         except Exception as e:
             logging.error(f"Ollama validation failed: {e}")
@@ -338,7 +355,8 @@ class PromptFlowValidator:
                 "fields_scanned": num_fields
             },
             "status": "warning" if pii_fields else "passed",
-            "recommendations": ["Apply data masking"] if pii_fields else []
+            "recommendations": ["Apply data masking"] if pii_fields else [],
+            "masked_data": self.mask_pii(dataset_sample, pii_fields) if pii_fields else dataset_sample
         }
     
     def validate_data_quality(self, dataset_sample: list, field_names: list) -> dict:
