@@ -181,6 +181,7 @@ class PromptFlowValidator:
                 "risk_level": pii_report.get("risk_level", "Low"),
                 "scan_stats": pii_report["scan_stats"],
                 "status": "warning" if pii_report.get("has_pii") else "passed",
+                "recommendations": ["Apply data masking", "Encrypt sensitive fields"] if pii_report.get("has_pii") else [],
                 "ai_powered": True
             }
         except Exception as e:

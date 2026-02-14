@@ -308,6 +308,10 @@ def run_script(command, action_name):
                 unified_progress[progress_key] = "Succeeded"
                 if last_json_output:
                     unified_progress["ai_insights"] = last_json_output.get("pii_validation")
+                
+                # SPECIAL CHAINING: If AI Validation succeeds, mark GOLD as Succeeded too (Integration complete)
+                if action_name == "AI Validation":
+                    unified_progress["GOLD"] = "Succeeded"
         else:
             action_status["error"] = f"Action failed with exit code {process.returncode}"
             action_status["logs"].append(f"❌ {action_name} Failed (Exit Code: {process.returncode})")
@@ -397,7 +401,6 @@ def get_action_status():
                 unified_progress["GOLD"] = "Pending"
             elif run.status == "Succeeded":
                 unified_progress["SILVER"] = "Succeeded"
-                unified_progress["GOLD"] = "Succeeded"
             elif run.status == "Failed":
                 unified_progress["SILVER"] = "Failed"
                 unified_progress["GOLD"] = "Failed"
@@ -411,4 +414,4 @@ def get_action_status():
 
 if __name__ == '__main__':
     # Using 5001 to avoid common 5000 conflict with macOS AirPlay
-    app.run(port=5001, debug=True)
+    app.run(port=5001, debug=False)
