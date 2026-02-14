@@ -4,6 +4,19 @@
 
 **XRS NEXUS** is an Cloud-Agnostic, metadata-driven, AI-orchestrated integration platform for XRS Group. We are using few Azure services to build this platform. Having said that, this platform is designed in such a way that it can be used for any enterprise data integration use case down the line , and we will be building more and more use cases on top of this platform. And as far as the cloud agnostic aspect is concerned, we are using Azure services to build this platform, but the platform is designed in such a way that it can be used for any cloud platform down the line such as AWS & GCP as well .  It revolutionizes how enterprise data is ingested, processed, and governed by replacing static ETL pipelines with dynamic, AI-generated integration flows.
 
+### 🤖 AI Model Selection & Challenges (Why Ollama?)
+
+For this Proof of Concept (POC) and presentation, we have made a strategic decision to use **Ollama (Phi-3 Mini)** running locally as our primary AI inference engine. This decision was reached after extensive testing of various LLM providers:
+
+| Provider | Status | Challenges Faced |
+| :--- | :--- | :--- |
+| **Azure OpenAI** | 🛑 Blocked | **Quota & Cost Limits**: We faced strict token quota limits ($200 credit cap) and "429 Too Many Requests" errors when processing high-volume synthetic datasets (20k+ records). |
+| **Hugging Face** | ⚠️ Limited | **Rate Limiting**: The free Inference API works for single calls but throttles requests heavily during batch processing pipelines. |
+| **Mistral AI** | ⚠️ Limited | **Subscription Required**: Excellent performance, but requires effective credit management which adds friction for a repeatable demo environment. |
+| **Ollama (Chosen)** | ✅ **Selected** | **Free & Unlimited**: Runs locally with 0 cost. No API rate limits. Keeps data 100% private. Identify PII without data leaving the network. |
+
+**Conclusion**: For this enterprise demo, **Ollama** provides the most stable, cost-effective, and reproducible environment. It allows us to simulate "Real-Time AI" without hitting cloud billing walls.
+
 The platform ingests metadata from 15+ heterogeneous enterprise systems (SAP, Salesforce, REST APIs, etc.), normalizes it into a canonical model, and uses **Azure AI Foundry (Prompt Flow + RAG)** to automatically generate and execute ETL/ELT pipelines on **Microsoft Fabric**.
 
 ---
