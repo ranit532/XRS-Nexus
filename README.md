@@ -839,3 +839,68 @@ flowchart TD
 
 3.  **Run Processing**:
     Use the Databricks Workspace to mount the ADLS containers and run the same PySpark logic found in `etl-execution/spark_jobs/`.
+
+---
+
+## 10. Complex Data Chatbot & AI Synergy Flow
+
+### Overview
+This advanced module demonstrates a **"Synergy Agent"** capable of querying both **Structured Data (SQL)** and **Unstructured Data (Documents)** simultaneously to answer complex business questions. It features a **Human-in-the-Loop** validation mechanism before committing any data to the Gold Layer.
+
+### Synergy Process Flow
+```mermaid
+sequenceDiagram
+    participant User
+    participant Agent as Synergy Bot (Phi-3)
+    participant SQL as SQLite DB (Structured)
+    participant Files as Docs/PDFs (Unstructured)
+    participant UI as Dashboard
+    participant Gold as ADLS Gold Layer
+
+    User->>UI: "Audit Engineering Budget"
+    UI->>Agent: Start Session
+    
+    loop Reasoning Loop (ReAct)
+        Agent->>Agent: Think...
+        
+        alt Need SQL Data
+            Agent->>SQL: run_sql_query()
+            SQL-->>Agent: Returns Table Data
+        else Need Document Data
+            Agent->>Files: read_file('Budget_Review.md')
+            Files-->>Agent: Returns Text Content
+        end
+        
+        Agent->>Agent: Cross-Reference & Analyze
+    end
+    
+    Agent-->>UI: "Discrepancy Found! Recommendation: Approve."
+    
+    User->>UI: Click [APPROVE & PUSH]
+    UI->>Gold: Upload Validated Data
+    Gold-->>UI: Confirmation (Checksum Verified)
+```
+
+### Key Capabilities
+
+1.  **Multi-Modal Reasoning**: Can join a SQL query result (e.g., *DeptID=1*) with a text file (e.g., *"Engineering budget increased..."*).
+2.  **Self-Correction**: If a SQL query fails (e.g., wrong table name), the agent receives a **System Hint** and retries with the correct schema.
+3.  **Loop Prevention**: Intelligent deduplication logic prevents the agent from getting stuck repeating the same actions.
+4.  **Interactive Audit**: Users watch the agent's "Thought Process" in real-time and can **Reject** bad reasoning or **Approve** valid insights.
+
+### How to Run
+
+1.  **Start the Backend**:
+    ```bash
+    python3 dashboard_bridge.py
+    ```
+2.  **Launch Dashboard**:
+    ```bash
+    cd dashboard && npm run dev
+    ```
+3.  **Trigger Flow**:
+    - Click **"AI VALIDATION"** in the UI.
+    - Watch the **"Synergy Validator"** modal open.
+    - See the agent query the database and read the budget files.
+    - Review the generated report.
+    - Click **"PUSH TO GOLD LAYER"** to finalize the audit.
