@@ -137,7 +137,7 @@ const SynergyValidator = ({ show, onClose, onComplete }) => {
       const res = await fetch('http://localhost:5001/api/synergy/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: "Analyze the 'Budget_Review.md' file and check for any discrepancies in the 'Engineering' department budget from the database." })
+        body: JSON.stringify({ question: "Perform a system-wide audit of the Engineering, Sales, and Support departments. Compare their SQL database budgets against the 'Budget_Review.md' file and flag any discrepancies." })
       });
       const data = await res.json();
       setHistory([data.event]);
@@ -180,7 +180,8 @@ const SynergyValidator = ({ show, onClose, onComplete }) => {
 
     } catch (e) {
       console.error(e);
-      setHistory(prev => [...prev, { type: 'error', content: 'Error processing step.' }]);
+      setHistory(prev => [...prev, { type: 'error', content: 'Connection lost. Retrying...' }]);
+      setTimeout(() => processNextStep(), 3000);
     }
   };
 

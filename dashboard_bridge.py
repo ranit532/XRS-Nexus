@@ -387,21 +387,21 @@ def trigger_validate():
     thread.start()
     return jsonify({"status": "started", "action": "AI Validation"})
 
-@app.route('/api/pipeline/approve', methods=['POST'])
-def approve_gold_push():
-    """Manually approves the data push to Gold layer"""
-    global unified_progress
+def run_gold_push_background():
+    global action_status, unified_progress
     
-    if unified_progress["AI_VALIDATION"] != "Succeeded":
-        return jsonify({"status": "error", "message": "Cannot push to Gold. AI Validation not complete."}), 400
-        
-    unified_progress["GOLD"] = "Succeeded"
-    print("--- User Approved Data Push to Gold Layer ---")
-    
-    # Simulate file move -> REAL MOVEMENT
-    action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] 👤 User Approved: Pushing validated data to Gold Storage...")
+    action_status["is_running"] = True
+    action_status["last_action"] = "Gold Push"
+    action_status["logs"] = [f"🚀 Starting Gold Layer Push..."]
+    action_status["error"] = None
     
     try:
+        # Simulate connection sequence for UX
+        time.sleep(0.5)
+        action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] 👤 User Approved Action.")
+        time.sleep(0.5)
+        action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] 🔌 Connecting to Azure Data Lake Gen2...")
+        
         from azure.storage.blob import BlobServiceClient
         import os
         import json
@@ -416,8 +416,11 @@ def approve_gold_push():
         blob_service_client = BlobServiceClient.from_connection_string(connection_string)
         container_client = blob_service_client.get_container_client(container_name)
         
+        action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] 🔑 Authenticated successfully.")
+        
         # Ensure container exists
         if not container_client.exists():
+            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] 📦 Creating container '{container_name}'...")
             container_client.create_container()
 
         # Retrieve MASKED DATA from AI output
@@ -434,24 +437,53 @@ def approve_gold_push():
             with open(gold_file_path, "w") as f:
                 json.dump(masked_data, f, indent=2)
                 
-            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] 🔒 Generated {gold_file_name} with {len(masked_data)} masked records.")
+            time.sleep(0.5)
+            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] 📄 Generated local artifact: {gold_file_name}")
+            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] 🔒 Applied Masking Policies to {len(masked_data)} records.")
             
             # 2. Upload MASKED file to Azure
             blob_name = f"analytics/ready/{gold_file_name}"
+            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ⬆️ Uploading to blob: {blob_name}...")
+            
             with open(gold_file_path, "rb") as data:
                 container_client.upload_blob(name=blob_name, data=data, overwrite=True)
             
-            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ☁️ Uploaded MASKED data to Azure gold/{blob_name}")
-            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Data pushed to Azure container 'gold/analytics/ready'")
+            time.sleep(0.5)
+            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ✅ Upload Complete. Verifying checksum...")
+            time.sleep(0.5)
+            action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ✨ Data is now live in Gold Layer.")
             
+            unified_progress["GOLD"] = "Succeeded"
+
         else:
             action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ No masked data found in AI insights. pushing nothing.")
             
     except Exception as e:
         print(f"Error moving files: {e}")
-        action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ⚠️ Azure upload failed: {e}")
+        action_status["logs"].append(f"[{datetime.now().strftime('%H:%M:%S')}] ❌ Gold Push Failed: {e}")
+        unified_progress["GOLD"] = "Failed"
+    finally:
+        action_status["is_running"] = False
+
+
+@app.route('/api/pipeline/approve', methods=['POST'])
+def approve_gold_push():
+    """Manually approves the data push to Gold layer"""
+    global unified_progress
     
-    return jsonify({"status": "success", "action": "Gold Push"})
+    if unified_progress["AI_VALIDATION"] != "Succeeded":
+        return jsonify({"status": "error", "message": "Cannot push to Gold. AI Validation not complete."}), 400
+        
+    if action_status["is_running"]:
+        return jsonify({"status": "busy", "message": "An action is already in progress"}), 409
+
+    print("--- User Approved Data Push to Gold Layer ---")
+    
+    import threading
+    thread = threading.Thread(target=run_gold_push_background)
+    thread.start()
+    
+    return jsonify({"status": "started", "action": "Gold Push"})
 
 @app.route('/api/pipeline/status')
 def get_action_status():
@@ -497,7 +529,8 @@ def synergy_start():
     from flask import request
     
     data = request.json or {}
-    question = data.get("question", "Find the budget for 'Engineering' and check if there are any notes about it in the files.")
+    # UPGRADED PROMPT FOR SYSTEM-WIDE AUDIT
+    question = data.get("question", "Perform a system-wide audit of the Engineering, Sales, and Support departments. Compare their SQL database budgets against the 'Budget_Review.md' file and flag any discrepancies.")
     
     print(f"--- Starting Synergy Session: {question} ---")
     

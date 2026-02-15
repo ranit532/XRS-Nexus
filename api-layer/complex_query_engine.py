@@ -206,6 +206,8 @@ RULES:
 2. If you have the final answer, output a JSON object in this format:
    {{"final_answer": "Your answer here"}}
 3. ONLY output the JSON object. Do not add commentary outside the JSON.
+4. OBSERVE the 'Tool Output' from the user carefully. Do NOT repeat the same tool call if you already have the output.
+5. If you have enough information to answer the user's question, IMMEDIATELY output 'final_answer'.
 """
 
         messages = [
@@ -214,6 +216,9 @@ RULES:
         ]
         
         yield {"type": "start", "question": user_question}
+
+        # Track previous actions to prevent loops
+        previous_actions = []
 
         # Max turns to prevent infinite loops
         for turn in range(15):
@@ -251,6 +256,14 @@ RULES:
                 if "tool" in action:
                     func_name = action["tool"]
                     args = action.get("args", {})
+
+                    # --- LOOP DETECTION ---
+                    action_signature = f"{func_name}:{json.dumps(args, sort_keys=True)}"
+                    if action_signature in previous_actions:
+                         yield {"type": "error", "content": f"Loop Detected: You already called {func_name} with these args."}
+                         messages.append({"role": "user", "content": f"SYSTEM: You already executed '{func_name}' with these arguments and received the result. Do NOT repeat it. Use the previous result to formulate your Final Answer."})
+                         continue
+                    previous_actions.append(action_signature)
                     
                     # HUMAN-IN-THE-LOOP: Request Approval
                     feedback = yield {
@@ -290,9 +303,15 @@ RULES:
 
                     yield {"type": "tool_result", "tool": func_name, "content": truncated_result}
                     
-                    # Append result to history
+                    # Append result to history with HINTS
+                    conversation_content = f"Tool '{func_name}' Output: {result}"
+                    
+                    # INTELLIGENT HINTING
+                    if func_name == "run_sql_query" and "no such table" in str(result).lower():
+                         conversation_content += "\nSYSTEM HINT: The table name seems incorrect. Use 'get_all_table_names' to see the correct schema."
+
                     messages.append({"role": "assistant", "content": content})
-                    messages.append({"role": "user", "content": f"Tool '{func_name}' Output: {result}"})
+                    messages.append({"role": "user", "content": conversation_content})
                 else:
                     yield {"type": "error", "content": "No tool or final_answer in response."}
                     messages.append({"role": "user", "content": "Error: Response must contain 'tool' or 'final_answer'."})
