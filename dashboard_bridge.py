@@ -478,6 +478,92 @@ def get_action_status():
         "unified_progress": unified_progress
     })
 
+# --- Synergy Agent (Interactive) ---
+import sys
+# Ensure api-layer is in path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'api-layer'))
+
+synergy_session = {
+    "engine": None,
+    "generator": None,
+    "history": [],
+    "status": "idle"
+}
+
+@app.route('/api/synergy/start', methods=['POST'])
+def synergy_start():
+    """Starts a new interactive Synergy Agent session"""
+    from complex_query_engine import ComplexQueryEngine
+    from flask import request
+    
+    data = request.json or {}
+    question = data.get("question", "Find the budget for 'Engineering' and check if there are any notes about it in the files.")
+    
+    print(f"--- Starting Synergy Session: {question} ---")
+    
+    try:
+        # Reset Session
+        synergy_session["engine"] = ComplexQueryEngine()
+        synergy_session["generator"] = synergy_session["engine"].run_step_by_step(question)
+        synergy_session["history"] = []
+        synergy_session["status"] = "running"
+        
+        # Advance to first event (which is usually 'start')
+        first_event = next(synergy_session["generator"])
+        synergy_session["history"].append(first_event)
+        
+        return jsonify({
+            "status": "started",
+            "event": first_event,
+            "history": synergy_session["history"]
+        })
+    except Exception as e:
+        synergy_session["status"] = "error"
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/synergy/step', methods=['POST'])
+def synergy_step():
+    """Advances the agent one step, optionally injecting feedback"""
+    from flask import request
+    
+    if synergy_session["status"] != "running" or not synergy_session["generator"]:
+        return jsonify({"status": "error", "message": "No active session"}), 400
+        
+    data = request.json or {}
+    feedback = data.get("feedback") # e.g. "APPROVE" or "REJECT: ..."
+    
+    try:
+        event = None
+        if feedback:
+            print(f"--- Injecting Feedback: {feedback} ---")
+            event = synergy_session["generator"].send(feedback)
+        else:
+            event = next(synergy_session["generator"])
+            
+        synergy_session["history"].append(event)
+        
+        # Check if done
+        if event.get("type") == "final_answer":
+            synergy_session["status"] = "completed"
+            
+        return jsonify({
+            "status": synergy_session["status"],
+            "event": event
+        })
+            
+    except StopIteration:
+        synergy_session["status"] = "completed"
+        return jsonify({"status": "completed", "message": "Agent finished execution."})
+    except Exception as e:
+        print(f"Synergy Step Error: {e}")
+        synergy_session["status"] = "error"
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/synergy/history', methods=['GET'])
+def synergy_history():
+    return jsonify(synergy_session["history"])
+
+
 if __name__ == '__main__':
     # Using 5001 to avoid common 5000 conflict with macOS AirPlay
     app.run(port=5001, debug=False)

@@ -157,6 +157,39 @@ class ComplexQueryEngine:
     # --- Agent Logic ---
 
     def ask(self, user_question):
+        """
+        Backward compatible synchronous method.
+        """
+        print(f"\n🤖 Agent received: {user_question}")
+        final_answer = "No answer found."
+        
+        # Create the generator
+        generator = self.run_step_by_step(user_question)
+        
+        try:
+            for event in generator:
+                # Log events to console similar to the old print statements
+                if event["type"] == "thought":
+                    print(f"  🤔 Agent thought: {event['content']}")
+                elif event["type"] == "tool_call":
+                    print(f"  🛠️ Calling Request: {event['tool']}({event['args']})")
+                elif event["type"] == "tool_result":
+                    print(f"  ✅ Tool Result: {event['content'][:100]}...")
+                elif event["type"] == "error":
+                    print(f"  ❌ Error: {event['content']}")
+                elif event["type"] == "final_answer":
+                    print(f"  🏁 Final Answer: {event['content']}")
+                    final_answer = event['content']
+        except Exception as e:
+            return f"Agent Error: {e}"
+            
+        return final_answer
+
+    def run_step_by_step(self, user_question):
+        """
+        Generator that yields events for each step of the agent's reasoning.
+        Useful for streaming UI updates.
+        """
         # System Prompt with Tool Definitions for ReAct
         tool_desc = json.dumps([t["function"] for t in self.tools], indent=2)
         system_prompt = f"""You are a 'Synergy Bot', a highly capable enterprise assistant. 
@@ -179,13 +212,13 @@ RULES:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_question}
         ]
-
-        print(f"\n🤖 Agent received: {user_question}")
         
+        yield {"type": "start", "question": user_question}
+
         # Max turns to prevent infinite loops
         for turn in range(15):
             try:
-                # For Ollama/Phi3, we don't use 'tools=' param, we use the prompt.
+                # 1. Inference Step
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
@@ -194,30 +227,49 @@ RULES:
                 )
                 
                 content = response.choices[0].message.content
-                print(f"  🤔 Agent thought (Raw): {content[:100]}...")
+                # Yield raw thought
+                yield {"type": "thought", "content": content, "turn": turn}
                 
+                # 2. Parsing Step
                 try:
                     action = json.loads(content)
                 except json.JSONDecodeError:
-                    # Try to find JSON in markdown
                     import re
                     match = re.search(r'\{.*\}', content, re.DOTALL)
                     if match:
                         action = json.loads(match.group(0))
                     else:
-                        print("  ❌ Failed to parse JSON response.")
-                        # Retrying with a hint
+                        yield {"type": "error", "content": "Failed to parse JSON response."}
                         messages.append({"role": "user", "content": "Error: Your response was not valid JSON. Please try again, outputting ONLY the JSON object."})
                         continue
 
+                # 3. Execution Step
                 if "final_answer" in action:
-                    print(f"  🏁 Final Answer: {action['final_answer']}")
-                    return action['final_answer']
+                    yield {"type": "final_answer", "content": action['final_answer']}
+                    return
                 
                 if "tool" in action:
                     func_name = action["tool"]
                     args = action.get("args", {})
-                    print(f"  🛠️ Calling Request: {func_name}({args})")
+                    
+                    # HUMAN-IN-THE-LOOP: Request Approval
+                    feedback = yield {
+                        "type": "request_approval", 
+                        "tool": func_name, 
+                        "args": args,
+                        "thought": content
+                    }
+
+                    # Handle Feedback
+                    if feedback and str(feedback).startswith("REJECT"):
+                        # User rejected the action with feedback
+                        yield {"type": "user_feedback", "content": f"User Feedback: {feedback}"}
+                        messages.append({"role": "assistant", "content": content})
+                        messages.append({"role": "user", "content": f"User stopped execution. Feedback: {feedback}"})
+                        continue
+                    
+                    # If APPROVE or None (default), proceed
+                    yield {"type": "tool_call", "tool": func_name, "args": args}
                     
                     result = ""
                     if func_name == "get_all_table_names":
@@ -232,23 +284,24 @@ RULES:
                         result = self._read_file(args.get("filename"))
                     
                     # Truncate result
+                    truncated_result = result
                     if len(result) > 2000:
-                        result = result[:2000] + "... [truncated]"
+                        truncated_result = result[:2000] + "... [truncated]"
 
-                    print(f"  ✅ Tool Result: {result[:100]}...")
+                    yield {"type": "tool_result", "tool": func_name, "content": truncated_result}
                     
                     # Append result to history
                     messages.append({"role": "assistant", "content": content})
                     messages.append({"role": "user", "content": f"Tool '{func_name}' Output: {result}"})
                 else:
-                    print("  ❌ No tool or final_answer in response.")
+                    yield {"type": "error", "content": "No tool or final_answer in response."}
                     messages.append({"role": "user", "content": "Error: Response must contain 'tool' or 'final_answer'."})
 
             except Exception as e:
-                print(f"Agent Loop Error: {e}")
-                return f"Agent Error: {e}"
+                yield {"type": "error", "content": str(e)}
+                return
 
-        return "I'm sorry, I reached my step limit without finding a definitive answer."
+        yield {"type": "error", "content": "Step limit reached."}
 
 if __name__ == "__main__":
     # Test script

@@ -109,6 +109,261 @@ const PipelineConsoleModal = ({ showModal, setShowModal, actionStatus, displayLo
   );
 };
 
+// --- Synergy Validator Modal (Interactive Agent) ---
+const SynergyValidator = ({ show, onClose, onComplete }) => {
+  const [history, setHistory] = useState([]);
+  const [status, setStatus] = useState('idle'); // idle, starting, running, paused, completed
+  const [pendingAction, setPendingAction] = useState(null);
+  const [feedback, setFeedback] = useState('');
+  const scrollRef = React.useRef(null);
+
+  // Auto-scroll
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [history]);
+
+  // Start Session
+  useEffect(() => {
+    if (show && status === 'idle') {
+      startSession();
+    }
+  }, [show]);
+
+  const startSession = async () => {
+    setStatus('starting');
+    try {
+      const res = await fetch('http://localhost:5001/api/synergy/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: "Analyze the 'Budget_Review.md' file and check for any discrepancies in the 'Engineering' department budget from the database." })
+      });
+      const data = await res.json();
+      setHistory([data.event]);
+      setStatus('running');
+      setTimeout(processNextStep, 500);
+    } catch (e) {
+      console.error(e);
+      setHistory(prev => [...prev, { type: 'error', content: 'Failed to start session.' }]);
+    }
+  };
+
+  const processNextStep = async (userFeedback = null) => {
+    try {
+      const res = await fetch('http://localhost:5001/api/synergy/step', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feedback: userFeedback })
+      });
+      const data = await res.json();
+
+      if (data.event) {
+        setHistory(prev => [...prev, data.event]);
+
+        // Check for Approval Request
+        if (data.event.type === 'request_approval') {
+          setStatus('paused');
+          setPendingAction(data.event);
+          return; // Stop loop, wait for user
+        }
+      }
+
+      if (data.status === 'completed') {
+        setStatus('completed');
+        setPendingAction(null);
+        return;
+      }
+
+      // Continue loop if not paused/completed
+      setTimeout(() => processNextStep(), 800);
+
+    } catch (e) {
+      console.error(e);
+      setHistory(prev => [...prev, { type: 'error', content: 'Error processing step.' }]);
+    }
+  };
+
+  const handleApprove = () => {
+    setPendingAction(null);
+    setStatus('running');
+    processNextStep("APPROVE");
+  };
+
+  const handleReject = () => {
+    if (!feedback) return;
+    setPendingAction(null);
+    setStatus('running');
+    processNextStep(`REJECT: ${feedback}`);
+    setFeedback('');
+  };
+
+  if (!show) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md"
+      >
+        <motion.div
+          initial={{ scale: 0.9, y: 20 }}
+          animate={{ scale: 1, y: 0 }}
+          className="w-full max-w-6xl w-[95vw] bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-purple-500/30 flex flex-col max-h-[90vh] h-[800px]"
+        >
+          {/* Header */}
+          <div className="p-4 border-b border-purple-500/20 bg-slate-900 flex justify-between items-center shrink-0">
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-purple-600 rounded-xl text-white shadow-lg shadow-purple-500/20 animate-pulse">
+                <Zap size={20} />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-white tracking-tight">Synergy AI Validation</h2>
+                <p className="text-xs text-purple-400 font-mono uppercase tracking-widest">Interactive Agent • Human-in-the-Loop</p>
+              </div>
+            </div>
+            <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-full transition-colors">
+              <Activity size={20} className="text-slate-400" />
+            </button>
+          </div>
+
+          <div className="flex flex-1 overflow-hidden">
+            {/* Left: Graphic Visualization */}
+            <div className="w-1/3 bg-slate-950 border-r border-slate-800 p-6 overflow-y-auto">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2"><Database size={12} /> Live Data Lineage</h3>
+              <div className="space-y-4 relative">
+                <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-slate-800 -z-10"></div>
+                {history.map((ev, i) => {
+                  if (ev.type === 'tool_call' || ev.type === 'request_approval') {
+                    const isSQL = ev.tool?.includes('sql') || ev.tool?.includes('table');
+                    const isFile = ev.tool?.includes('file');
+                    const isApproval = ev.type === 'request_approval';
+
+                    return (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className={`p-4 rounded-xl border-l-4 ml-2 transition-all ${isApproval ? 'border-amber-500 bg-amber-900/10' :
+                          isSQL ? 'border-blue-500 bg-blue-900/10' :
+                            isFile ? 'border-pink-500 bg-pink-900/10' :
+                              'border-slate-500 bg-slate-800'
+                          }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg ${isSQL ? 'bg-blue-500/20 text-blue-400' : isFile ? 'bg-pink-500/20 text-pink-400' : 'bg-slate-700 text-slate-400'}`}>
+                            {isSQL ? <Database size={16} /> : isFile ? <FileCheck size={16} /> : <Activity size={16} />}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase">{ev.tool}</p>
+                            <p className="text-xs font-mono text-slate-300 truncate w-full opacity-70">
+                              {Object.values(ev.args || {}).join(', ').substring(0, 30)}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )
+                  }
+                  return null;
+                })}
+              </div>
+            </div>
+
+            {/* Right: Thought Stream & Interaction */}
+            <div className="flex-1 flex flex-col bg-slate-900 relative min-w-0 min-h-0">
+              <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 font-mono text-xs scroll-smooth">
+                {history.map((ev, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                    {ev.type === 'thought' && (
+                      <div className="flex gap-4 group">
+                        <div className="text-slate-600">THOUGHT &gt;</div>
+                        <div className="text-slate-300 italic">{ev.content}</div>
+                      </div>
+                    )}
+                    {ev.type === 'request_approval' && (
+                      <div className="bg-gradient-to-br from-amber-500/10 to-transparent border border-amber-500/30 p-6 rounded-2xl text-amber-200 my-4 shadow-lg shadow-amber-900/20">
+                        <p className="font-bold flex items-center gap-2 mb-2 text-amber-400"><AlertTriangle size={16} /> HUMAN-IN-THE-LOOP REQUIRED</p>
+                        <div className="pl-6 border-l-2 border-amber-500/30 space-y-2">
+                          <p className="text-sm">Agent intends to execute: <span className="font-bold text-white bg-amber-600/30 px-2 py-0.5 rounded">{ev.tool}</span></p>
+                          <div className="bg-black/30 p-3 rounded-lg overflow-x-auto">
+                            <code className="text-amber-100/70">{JSON.stringify(ev.args, null, 2)}</code>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {ev.type === 'tool_result' && (
+                      <div className="text-emerald-500/60 pl-16 text-[10px] truncate cursor-help border-l-2 border-emerald-900 pl-2 ml-14" title={ev.content}>
+                        RESULT :: {ev.content}
+                      </div>
+                    )}
+                    {ev.type === 'final_answer' && (
+                      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 rounded-3xl text-white shadow-2xl my-6 border border-blue-400/30">
+                        <h4 className="font-black text-2xl mb-4 flex items-center gap-3"><ShieldCheck size={28} /> VALIDATION COMPLETE</h4>
+                        <p className="text-base leading-relaxed font-sans">{ev.content}</p>
+                      </div>
+                    )}
+                    {ev.type === 'error' && (
+                      <div className="text-red-400 bg-red-900/20 p-4 rounded-lg border border-red-500/30">
+                        ERROR: {ev.content}
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+                {status === 'running' && (
+                  <div className="flex gap-2 justify-start pl-16 py-4 opacity-50">
+                    <motion.div animate={{ height: [10, 20, 10] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1 bg-blue-500 rounded-full" />
+                    <motion.div animate={{ height: [10, 20, 10] }} transition={{ repeat: Infinity, duration: 1, delay: 0.1 }} className="w-1 bg-blue-500 rounded-full" />
+                    <motion.div animate={{ height: [10, 20, 10] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1 bg-blue-500 rounded-full" />
+                  </div>
+                )}
+              </div>
+
+              {/* Interaction Zone */}
+              <div className="p-4 bg-slate-950 border-t border-slate-800 shrink-0 z-10">
+                {status === 'paused' && pendingAction ? (
+                  <div className="max-w-3xl mx-auto space-y-4">
+                    <h4 className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" /> Awaiting your feedback
+                    </h4>
+                    <div className="flex gap-4">
+                      <button onClick={handleApprove} className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2 uppercase tracking-wide">
+                        <ShieldCheck size={20} /> Approve Action
+                      </button>
+                      <div className="flex-[2] flex gap-2">
+                        <input
+                          value={feedback}
+                          onChange={(e) => setFeedback(e.target.value)}
+                          placeholder="Provide correction feedback (e.g., 'Check a different file')..."
+                          className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-6 text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500 focus:bg-slate-800 transition-colors"
+                        />
+                        <button onClick={handleReject} className="px-8 py-4 bg-slate-800 hover:bg-red-500 hover:text-white text-slate-400 font-bold rounded-xl transition-all border border-slate-700 hover:border-red-500 active:scale-95">
+                          REJECT
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : status === 'completed' ? (
+                  <div className="max-w-md mx-auto">
+                    <button onClick={onComplete} className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-black tracking-widest rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center justify-center gap-3">
+                      <Database size={20} /> PUSH TO GOLD LAYER
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-3 text-slate-500 text-xs font-mono uppercase tracking-widest py-4">
+                    <Zap size={14} className="animate-spin" /> AI Agent is reasoning...
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const Dashboard = () => {
   const [logs, setLogs] = useState([]);
   const [activeStep, setActiveStep] = useState(0);
@@ -117,6 +372,7 @@ const Dashboard = () => {
   const [trustScore, setTrustScore] = useState(94);
   const [latestRun, setLatestRun] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showSynergy, setShowSynergy] = useState(false);
   const [lastValidAiInsights, setLastValidAiInsights] = useState(null); // STATE FREEZE for AI insights
 
   const steps = [
@@ -264,6 +520,10 @@ const Dashboard = () => {
   }, []);
 
   const triggerAction = async (endpoint) => {
+    if (endpoint === 'validate') {
+      setShowSynergy(true);
+      return;
+    }
     try {
       setShowModal(true);
       setDisplayLogs([]); // Immediate clear on user action
@@ -389,6 +649,12 @@ const Dashboard = () => {
   }, []);
 
 
+  const handleSynergyComplete = () => {
+    setShowSynergy(false);
+    // Directly call the gold push endpoint logic or trigger it
+    triggerAction('approve');
+  };
+
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] text-slate-900 p-8 font-sans overflow-x-hidden selection:bg-blue-100">
       {/* Background Particles - Enhanced for Light Mode */}
@@ -410,6 +676,12 @@ const Dashboard = () => {
           />
         ))}
       </div>
+
+      <SynergyValidator
+        show={showSynergy}
+        onClose={() => setShowSynergy(false)}
+        onComplete={handleSynergyComplete}
+      />
 
       {/* Header */}
       <div className="relative z-10 flex justify-between items-center mb-8 glass-card p-6 rounded-2xl border-b border-blue-100 backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] bg-white/70">
