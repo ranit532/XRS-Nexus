@@ -1,0 +1,11 @@
+RowID,Product_ID,Product_Name,Current_Price,Proposed_Price,Macro_Logic,Strategy_Outcome
+bdd640fb-0667-4ad1-9c80-317fa3b1799d,26,Year Finish,441.62,464.48,"IF(Reference('competitor_pricing_api', ID=26) < 441.6234451063554, 'LOWER_PRICE', 'HOLD')",REPRICE
+23b8c1e9-3924-46de-beb1-3b9046685257,92,Still Design,51.13,53.16,"IF(Reference('competitor_pricing_api', ID=92) < 51.134256459380104, 'LOWER_PRICE', 'HOLD')",REPRICE
+bd9c66b3-ad3c-4d6d-9a3d-1fa7bc8960a9,84,Important Popular,473.57,452.53,"IF(Reference('competitor_pricing_api', ID=84) < 473.57039645914926, 'LOWER_PRICE', 'HOLD')",HOLD
+972a8469-1641-4f82-8b9d-2434e465e150,90,Than Hit,421.85,460.42,"IF(Reference('competitor_pricing_api', ID=90) < 421.8477749006537, 'LOWER_PRICE', 'HOLD')",REPRICE
+17fc695a-07a0-4a6e-8822-e8f36c031199,70,Fish Executive,252.24,232.18,"IF(Reference('competitor_pricing_api', ID=70) < 252.2448128151141, 'LOWER_PRICE', 'HOLD')",HOLD
+9a1de644-815e-46d1-bb8f-aa1837f8a88b,54,Treat Do,307.04,282.28,"IF(Reference('competitor_pricing_api', ID=54) < 307.0423381200102, 'LOWER_PRICE', 'HOLD')",HOLD
+b74d0fb1-32e7-4629-8fad-c1a606cb0fb3,29,Draw Pull,337.25,344.25,"IF(Reference('competitor_pricing_api', ID=29) < 337.25296981916597, 'LOWER_PRICE', 'HOLD')",HOLD
+6b65a6a4-8b81-48f6-b38a-088ca65ed389,58,According Night,163.82,171.35,"IF(Reference('competitor_pricing_api', ID=58) < 163.81866607859624, 'LOWER_PRICE', 'HOLD')",REPRICE
+47378190-96da-4dac-b2ff-5d2a386ecbe0,76,Move Wind,228.50,211.35,"IF(Reference('competitor_pricing_api', ID=76) < 228.4976699175832, 'LOWER_PRICE', 'HOLD')",DISCONTINUE
+c241330b-01a9-471f-9e8a-774bcf36d58b,36,Food Collection,373.20,341.76,"IF(Reference('competitor_pricing_api', ID=36) < 373.2031450904861, 'LOWER_PRICE', 'HOLD')",HOLD

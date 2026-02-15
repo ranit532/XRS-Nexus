@@ -1,0 +1,15 @@
+INTERNAL LEGAL NOTES - VENDOR DISPUTES & RENEWALS
+=================================================
+
+Supplier Ref: 1 (Johnson Inc)
+Status: Under Review
+Notes: Contract terms regarding liability clause 4.2 are being contested. Last shipment had 2% defect rate.
+-------------------------------------------------
+Supplier Ref: 10 (Walsh, Cox and Owen)
+Status: Renewal Pending
+Notes: Contract terms regarding liability clause 4.2 are being contested. Last shipment had 5% defect rate.
+-------------------------------------------------
+Supplier Ref: 2 (Smith, Miller and Scott)
+Status: Under Review
+Notes: Contract terms regarding liability clause 4.2 are being contested. Last shipment had 5% defect rate.
+-------------------------------------------------

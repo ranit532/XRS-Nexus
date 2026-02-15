@@ -1,0 +1,25 @@
+# Annual Budget Review 2025
+
+The following departments have been reviewed for Q1 allocation:
+
+## Department: Sales (ID: 2)
+Current allocation is $216,739.00. Performance has been exceptional.
+Recommendation: Increase by 10%.
+
+## Department: Engineering (ID: 1)
+Current allocation is $770,487.00. Performance has been below expectations.
+Recommendation: Increase by 10%.
+
+## Department: Support (ID: 6)
+Current allocation is $356,787.00. Performance has been below expectations.
+Recommendation: Reduce by 5%.
+
+## Department: Marketing (ID: 3)
+Current allocation is $126,225.00. Performance has been below expectations.
+Recommendation: Increase by 10%.
+
+## Department: Legal (ID: 8)
+Current allocation is $246,316.00. Performance has been below expectations.
+Recommendation: Maintain current level.
+
+**Confidential**: This document contains sensitive financial projections.

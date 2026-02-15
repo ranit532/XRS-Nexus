@@ -1,0 +1,8 @@
+MIGRATION LOGS - LEGACY SYSTEM
+The following user IDs from the old system were flagged:
+
+- User 6498da39-d7c8-402c-aea5-312ac942e6e8: Failed to map to new Active Directory. Data stored in 'legacy_users' table.
+- User 7ecd7062-ee40-4b9f-a7b2-a5c1b6b0d0b9: Failed to map to new Active Directory. Data stored in 'legacy_users' table.
+- User 429e09bd-7862-446c-892e-44b72ee25989: Failed to map to new Active Directory. Data stored in 'legacy_users' table.
+- User 18246315-ad49-4072-bf84-3004c4ac41b5: Failed to map to new Active Directory. Data stored in 'legacy_users' table.
+- User 17cb67b8-6d0f-44e6-a174-a7856f2190cb: Failed to map to new Active Directory. Data stored in 'legacy_users' table.
