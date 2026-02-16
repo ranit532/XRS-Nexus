@@ -11,19 +11,17 @@ from complex_query_engine import ComplexQueryEngine
 print("--- STARTING DEBUG ---")
 try:
     engine = ComplexQueryEngine()
-    print("\n--- SCHEMA SUMMARY CONTENT ---")
+    print("\n--- INJECTED SCHEMA SUMMARY ---")
     print(engine.schema_summary)
-    print("------------------------------")
+    print("-------------------------------")
     
-    if not engine.schema_summary:
-        print("❌ SCHEMA SUMMARY IS EMPTY!")
-    else:
-        print("✅ GENERIC SCHEMA SUMMARY FOUND")
-        
-    if "departments" in engine.schema_summary:
-        print("✅ 'departments' table found in schema")
-    else:
-        print("❌ 'departments' table NOT found in schema")
+    expected_tables = ["departments", "projects", "products", "vendors"]
+    print("\n--- TABLE VERIFICATION ---")
+    for t in expected_tables:
+        if f"- {t}:" in engine.schema_summary:
+            print(f"✅ Table '{t}' FOUND in schema summary.")
+        else:
+            print(f"❌ Table '{t}' MISSING from schema summary.")
 
 except Exception as e:
     print(f"❌ ERROR: {e}")

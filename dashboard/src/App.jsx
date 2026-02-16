@@ -452,6 +452,15 @@ const SynergyValidator = ({ show, onClose, onComplete }) => {
                         ERROR: {safeStringify(ev.content)}
                       </div>
                     )}
+                    {ev.type === 'warning' && (
+                      <div className="text-amber-300 bg-amber-900/20 p-4 rounded-lg border border-amber-500/30 flex items-center gap-3">
+                        <AlertTriangle size={18} className="text-amber-500" />
+                        <div>
+                          <span className="font-bold text-amber-500 uppercase text-[10px] tracking-wider block mb-1">System Alert</span>
+                          {safeStringify(ev.content)}
+                        </div>
+                      </div>
+                    )}
                   </motion.div>
                 ))}
                 {status === 'running' && (

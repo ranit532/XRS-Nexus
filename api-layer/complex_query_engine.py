@@ -131,12 +131,28 @@ class ComplexQueryEngine:
             {
                 "type": "function",
                 "function": {
-                    "name": "execute_sql_update",
-                    "description": "Executes a SQL data modification query (UPDATE, INSERT, DELETE). Use for fixing discrepancies in structured data.",
+                    "name": "create_table",
+                    "description": "Creates a new table if it does not exist.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "query": {"type": "string", "description": "The SQL query to execute (must be UPDATE, INSERT, or DELETE)"}
+                            "query": {"type": "string", "description": "The CREATE TABLE SQL statement"},
+                            # Fallback if Agent sends 'name' instead of query
+                            "name": {"type": "string", "description": "Name of table (deprecated, use query)"}
+                        },
+                        "required": []
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "execute_sql_update",
+                    "description": "Executes a SQL data modification query. Use for fixing discrepancies.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {"type": "string", "description": "The SQL query (UPDATE, INSERT, DELETE)"}
                         },
                         "required": ["query"]
                     }
@@ -250,7 +266,15 @@ class ComplexQueryEngine:
             cursor = conn.cursor()
             cursor.execute(query)
             conn.commit()
-            return f"Success: Query executed. Rows affected: {cursor.rowcount}"
+            
+            rows_affected = cursor.rowcount
+            msg = f"Success: Query executed. Rows affected: {rows_affected}"
+            
+            # SMART HINT: If UPDATE returned 0 rows, suggest INSERT
+            if rows_affected == 0 and query.strip().upper().startswith("UPDATE"):
+                msg += " \nSYSTEM HINT: Rows affected: 0. The record you tried to update does not exist. Please use INSERT to create the record."
+            
+            return msg
         except sqlite3.Error as e:
             error_msg = f"Error executing update: {e}"
             if "no such column: department" in str(e).lower():
@@ -261,6 +285,16 @@ class ComplexQueryEngine:
         finally:
             if conn:
                 conn.close()
+
+    def _create_table(self, query=None, name=None):
+        # Wrapper around execute_sql_update for Agent convenience
+        if query:
+            return self._execute_sql_update(query)
+        elif name:
+            # Heuristic for lazy Agent: Create generic table if only name provided
+            # This is risky but helpful for the demo
+            return self._execute_sql_update(f"CREATE TABLE IF NOT EXISTS {name} (id INTEGER PRIMARY KEY, name TEXT, status TEXT, budget REAL);")
+        return "Error: Must provide 'query' string."
 
     def _list_files(self):
         files = glob.glob(f"{UNSTRUCTURED_DIR}/*")
@@ -352,14 +386,38 @@ CRITICAL: If you find a discrepancy, you must PROPOSE A FIX using `update_file` 
 
 {self.schema_summary}
 
-UNSTRUCTURED FILES:
+AUDIT ORDER (STRICT SEQUENCE):
+1. phase_1_budget: 'Budget_Review.md' -> UPDATE 'departments'
+2. phase_2_product: 'Product_Strategy.csv' -> UPDATE 'products'
+3. phase_3_legacy: 'Legacy_System_Notes.md' -> UPDATE 'projects'
+4. phase_4_vendor: 'Vendor_Legal_Notes.md' -> UPDATE 'vendors'
+
+PHASE BLOCKERS:
+- You are BLOCKED from starting Phase 2 until you have successfully executed Phase 1 updates.
+- DO NOT read Phase 4 files while in Phase 1.
+- DO NOT use `list_files` (Files are listed above). focus on `read_file`.
+
 1. BUDGETS: 'Budget_Review.md' (Check for 'SLASH BUDGET')
+   - CRITICAL: Read the recommendation for EACH department.
+   - Sales/Engineering -> "Slash 30%" -> `budget - (budget * 0.30)`
+   - Support -> "Reduce 5%" -> `budget - (budget * 0.05)`
+   - Legal -> "Maintain" -> NO CHANGE.
+   - WARNING: Do NOT group them. Use separate queries. MATCH NAMES EXACTLY.
+   
 2. LEGACY SYSTEMS: 'Legacy_System_Notes.md' (Check for 'Decommissioning' notes)
+   - HINT: If file says "Decommissioning" or "Deprecated", SQL should NOT list it as "Critical" or have high budget.
+
 3. PRODUCT STRATEGY: 'Product_Strategy.csv' (Source of Truth for Launch Dates)
+   - HINT: CSV 'Launch_Date' is the source of truth. If SQL differs, update SQL.
+
 4. VENDOR LEGAL: 'Vendor_Legal_Notes.md' (Check for legal disputes)
+   - HINT: If Legal says "Dispute" or "Do not process", SQL status must be "On Hold" or "Suspended", NOT "Active".
 
 MISSING TABLES or DATA?
-- If you find a 'no such table' error, CREATE the table first.
+- If you find a 'no such table' error, use 'create_table'.
+- SPECIFIC CREATE STATEMENTS:
+  1. `vendors`: `CREATE TABLE IF NOT EXISTS vendors (vendor_name TEXT PRIMARY KEY, status TEXT);`
+  2. `projects`: `CREATE TABLE IF NOT EXISTS projects (project_id INTEGER PRIMARY KEY, name TEXT, status TEXT, budget REAL);`
 - If an `execute_sql_update` (UPDATE) returns "Rows affected: 0", it means the record does not exist. You MUST then use `INSERT` to add it.
 - Example: "INSERT INTO vendors (vendor_name, status) VALUES ('Acme Corp', 'On Hold');"
 
@@ -374,10 +432,17 @@ RULES:
 3. ONLY output the JSON object. Do not add commentary outside the JSON.
 4. OBSERVE the 'Tool Output' from the user carefully. Do NOT repeat the same tool call if you already have the output.
 5. If you have enough information to answer the user's question, IMMEDIATELY output 'final_answer'.
-6. SQL RULES:
-   - Do NOT wrap the entire query in quotes.
-   - Do NOT use commas in numeric values (e.g. 10000.00 not 10,000.00).
-   - Use correct column names from the SCHEMA section above.
+7. SQL RESTRICTIONS (STRICT):
+   - FORBIDDEN: Do NOT use `CASE` statements for updates. They are too complex and error-prone.
+   - REQUIREMENT: Use SEPARATE `execute_sql_update` calls for each department.
+   - MATH RULES (EXPLICIT):
+     - "Slash by 30%" -> `SET budget = budget - (budget * 0.30)`
+     - "Reduce by 5%" -> `SET budget = budget - (budget * 0.05)`
+     - "Maintain" -> DO NOT UPDATE.
+   - Example Correct Plan:
+     1. `UPDATE departments SET budget = budget - (budget * 0.30) WHERE name = 'Sales'`
+     2. `UPDATE departments SET budget = budget - (budget * 0.30) WHERE name = 'Engineering'`
+     3. `UPDATE departments SET budget = budget - (budget * 0.05) WHERE name = 'Support'`
 """
 
         messages = [
@@ -457,6 +522,7 @@ RULES:
                         continue
 
                 # 3. Execution Step
+                # 3. Execution Step
                 if "final_answer" in action:
                     # BLOCK EARLY EXIT if pending domains exist
                     if pending_domains and turn < 25:
@@ -467,15 +533,34 @@ RULES:
                     yield {"type": "final_answer", "content": action['final_answer']}
                     return
                 
-                if "tool" in action:
-                    func_name = action["tool"]
-                    args = action.get("args", {})
+                # NORMALIZE ACTIONS (Single vs Match)
+                actions_to_execute = []
+                if "tools" in action:
+                    actions_to_execute = action["tools"]
+                elif "tool" in action:
+                    actions_to_execute.append(action)
+                
+                if not actions_to_execute:
+                    yield {"type": "error", "content": "No tool or final_answer in response."}
+                    messages.append({"role": "user", "content": "Error: Response must contain 'tool', 'tools', or 'final_answer'."})
+                    continue
+
+                # Add Assistant Message ONCE
+                messages.append({"role": "assistant", "content": content})
+                
+                combined_results = []
+                
+                for sub_action in actions_to_execute:
+                    func_name = sub_action.get("tool")
+                    args = sub_action.get("args", {})
+
+                    if not func_name: continue
 
                     # --- LOOP DETECTION ---
                     action_signature = f"{func_name}:{json.dumps(args, sort_keys=True)}"
                     if action_signature in previous_actions:
-                         yield {"type": "error", "content": f"Loop Detected: You already called {func_name} with these args."}
-                         messages.append({"role": "user", "content": f"SYSTEM: You already executed '{func_name}' with these arguments. Do NOT repeat it."})
+                         yield {"type": "warning", "content": f"Loop Detected: You already called {func_name} with these args !"}
+                         combined_results.append(f"SYSTEM: You already executed '{func_name}' with these arguments. Do NOT repeat it.")
                          continue
                     previous_actions.append(action_signature)
                     
@@ -491,9 +576,10 @@ RULES:
                     if feedback and str(feedback).startswith("REJECT"):
                         # User rejected the action with feedback
                         yield {"type": "user_feedback", "content": f"User Feedback: {feedback}"}
-                        messages.append({"role": "assistant", "content": content})
-                        messages.append({"role": "user", "content": f"User stopped execution. Feedback: {feedback}"})
-                        continue
+                        combined_results.append(f"User stopped execution of {func_name}. Feedback: {feedback}")
+                        # Stop processing further tools in this batch if rejected? 
+                        # For safety, yes.
+                        break
                     
                     # NEW: Allow feedback to OVERRIDE args (e.g., "APPROVE: {new_args}")
                     if feedback and str(feedback).startswith("APPROVE_WITH_ARGS:"):
@@ -522,6 +608,8 @@ RULES:
                         result = self._read_file(args.get("filename"))
                     elif func_name == "update_file":
                         result = self._update_file(args.get("filename"), args.get("search_text"), args.get("replacement_text"))
+                    elif func_name == "create_table":
+                        result = self._create_table(args.get("query"), args.get("name"))
                     
                     # Truncate result
                     truncated_result = result
@@ -531,23 +619,30 @@ RULES:
                     yield {"type": "tool_result", "tool": func_name, "content": truncated_result}
                     
                     # Append result to history with HINTS
-                    conversation_content = f"Tool '{func_name}' Output: {result}"
+                    single_result_log = f"Tool '{func_name}' Output: {result}"
                     
                     # INTELLIGENT HINTING
                     if func_name == "run_sql_query" and "no such table" in str(result).lower():
-                         conversation_content += "\nSYSTEM HINT: The table name seems incorrect. Use 'get_all_table_names' to see the correct schema."
+                         single_result_log += "\nSYSTEM HINT: The table name seems incorrect. Use 'get_all_table_names' to see the correct schema."
                     
                     elif func_name == "read_file":
-                        conversation_content += "\nSYSTEM HINT: You have the file content. Now cross-reference this with your SQL data calculation. If you see a discrepancy (e.g., Budget vs Recommendation), call `update_file` or `execute_sql_update` to fix it. If everything matches, output 'final_answer'."
+                        single_result_log += "\nSYSTEM HINT: You have the file content. Now cross-reference this with your SQL data calculation. If you see a discrepancy (e.g., Budget vs Recommendation), call `update_file` or `execute_sql_update` to fix it. If everything matches, output 'final_answer'."
 
                     elif func_name in ["update_file", "execute_sql_update"] and "Success" in str(result):
-                        conversation_content += "\nSYSTEM HINT: Fix executed. Now you can provide the 'final_answer' summarizing what was fixed."
+                        single_result_log += "\nSYSTEM HINT: Fix executed. Now you can provide the 'final_answer' summarizing what was fixed."
                     
-                    messages.append({"role": "assistant", "content": content})
-                    messages.append({"role": "user", "content": conversation_content})
+                    combined_results.append(single_result_log)
+
+                # Append all results as one User Message
+                if combined_results:
+                     messages.append({"role": "user", "content": "\n\n".join(combined_results)})
                 else:
-                    yield {"type": "error", "content": "No tool or final_answer in response."}
-                    messages.append({"role": "user", "content": "Error: Response must contain 'tool' or 'final_answer'."})
+                     # If no tools were executed (e.g. all rejected or empty list)
+                     messages.append({"role": "user", "content": "No actions executed inside the batch."})
+
+            except Exception as e:
+                yield {"type": "error", "content": str(e)}
+                return
 
             except Exception as e:
                 yield {"type": "error", "content": str(e)}
