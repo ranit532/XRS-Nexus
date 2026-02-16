@@ -8,7 +8,7 @@ Recommendation: # RECOMMENDATION: # SLASH BUDGET BY 40%
 
 ## Department: Engineering (ID: 1)
 Current allocation is 770,486.00. Performance has been below expectations.
-Recommendation: # RECOMMENDATION: # SLASH BUDGET BY 50%
+Recommendation: # RECOMMENDATION: # SLASH BUDGET BY 10%
 
 ## Department: Support (ID: 6)
 Current allocation is $356,787.00. Performance has been below expectations.
