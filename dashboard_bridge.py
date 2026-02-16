@@ -626,6 +626,27 @@ def synergy_history():
     return jsonify(synergy_session["history"])
 
 
+
+import atexit
+import sqlite3
+
+def cleanup_demo_tables():
+    """Drops the demo-specific tables (vendors, projects) on shutdown."""
+    print("\n🧹 Cleaning up demo tables (vendors, projects)...")
+    try:
+        conn = sqlite3.connect("data/complex_erp.db")
+        cursor = conn.cursor()
+        cursor.execute("DROP TABLE IF EXISTS vendors")
+        cursor.execute("DROP TABLE IF EXISTS projects")
+        conn.commit()
+        conn.close()
+        print("✨ Demo environment reset complete.")
+    except Exception as e:
+        print(f"⚠️ Error during cleanup: {e}")
+
+# Register cleanup on exit
+atexit.register(cleanup_demo_tables)
+
 if __name__ == '__main__':
     # Using 5001 to avoid common 5000 conflict with macOS AirPlay
     app.run(port=5001, debug=False)

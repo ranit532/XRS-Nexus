@@ -48,6 +48,9 @@ class ComplexQueryEngine:
             print("WARNING: Using MOCK provider. AI responses are simulated.")
             self.client = None
             self.model = "mock-gpt"
+        
+        # Define DB Path (from global)
+        self.db_path = DB_PATH
 
         # Define Tools
         self.tools = [
@@ -151,6 +154,9 @@ class ComplexQueryEngine:
         return json.dumps(tables)
 
     def _get_table_schema(self, table_name):
+        # Sanitize input
+        table_name = table_name.strip().strip("'").strip('"')
+        
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         schema = cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (table_name,)).fetchone()
@@ -164,6 +170,12 @@ class ComplexQueryEngine:
                 if not query: return "Error: Empty query list."
                 query = query[0]
 
+            # Sanitize input (strip outer quotes if AI added them)
+            query = query.strip().strip("'").strip('"')
+            
+            # FIX: Replace escaped quotes with single quotes for SQLite
+            query = query.replace('\\"', "'").replace("\\'", "'")
+
             conn = sqlite3.connect(DB_PATH)
             # Use dictionary cursor for readability
             conn.row_factory = sqlite3.Row
@@ -176,29 +188,43 @@ class ComplexQueryEngine:
             return f"Error executing SQL: {e}"
 
     def _execute_sql_update(self, query):
-        try:
-            # Handle list input
-            if isinstance(query, list): query = query[0]
-            
-            # Simple security check (in real app, use stricter granular permissions)
-            if not any(kw in query.upper() for kw in ["UPDATE", "INSERT", "DELETE"]):
-                return "Error: Only UPDATE, INSERT, or DELETE queries are allowed for this tool."
+        """
+        Executes an INSERT, UPDATE, DELETE, CREATE, DROP, or ALTER query.
+        """
+        if not query:
+            return "Error: Query cannot be empty."
+        
+        # Sanitize input
+        query = query.strip().strip("'").strip('"')
+        # FIX: Replace escaped quotes
+        query = query.replace('\\"', "'").replace("\\'", "'")
 
-            conn = sqlite3.connect(DB_PATH)
+        # Security check - allow Schema Modification
+        allowed_starts = ["UPDATE", "INSERT", "DELETE", "CREATE", "DROP", "ALTER"]
+        if not any(query.strip().upper().startswith(x) for x in allowed_starts):
+            return "Error: Only UPDATE, INSERT, DELETE, CREATE, DROP, or ALTER queries are allowed for this tool."
+
+        conn = None
+        try:
+            conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute(query)
             conn.commit()
-            changes = conn.total_changes
-            conn.close()
-            return f"Success: {changes} rows affected."
-        except Exception as e:
-            return f"Error executing SQL Update: {e}"
+            return f"Success: Query executed. Rows affected: {cursor.rowcount}"
+        except sqlite3.Error as e:
+            return f"Error executing update: {e}"
+        finally:
+            if conn:
+                conn.close()
 
     def _list_files(self):
         files = glob.glob(f"{UNSTRUCTURED_DIR}/*")
         return json.dumps([os.path.basename(f) for f in files])
 
     def _read_file(self, filename):
+        # Sanitize input
+        filename = filename.strip().strip("'").strip('"')
+        
         filepath = os.path.join(UNSTRUCTURED_DIR, filename)
         if not os.path.exists(filepath):
             return "File not found."
@@ -209,6 +235,9 @@ class ComplexQueryEngine:
             return f"Error reading file: {e}"
 
     def _update_file(self, filename, search_text, replacement_text):
+        # Sanitize input
+        filename = filename.strip().strip("'").strip('"')
+        
         filepath = os.path.join(UNSTRUCTURED_DIR, filename)
         if not os.path.exists(filepath):
             return "File not found."
@@ -217,7 +246,11 @@ class ComplexQueryEngine:
                 content = f.read()
             
             if search_text not in content:
-                return "Error: 'search_text' not found in file. Please ensure exact match including whitespace."
+                # Try relaxed search (ignore potential quote mismatch or whitespace issues)
+                if search_text.strip().strip("'").strip('"') in content:
+                     search_text = search_text.strip().strip("'").strip('"')
+                else:
+                     return "Error: 'search_text' not found in file. Please ensure exact match including whitespace."
             
             new_content = content.replace(search_text, replacement_text)
             
@@ -274,9 +307,10 @@ CRITICAL: If you find a discrepancy, you must PROPOSE A FIX using `update_file` 
 
 DATABASE HINTS & FILES:
 1. BUDGETS:
-   - SQL: 'departments' table (id, budget)
+   - SQL: 'departments' table. Columns: [id, name, budget, location]. 
+   - CRITICAL: The column is 'name', NOT 'department'. Use `WHERE name = 'Sales'`, NOT `department = 'Sales'`.
    - FILE: 'Budget_Review.md'
-   - HINT: Check for 'SLASH BUDGET' recommendations in the file and match with SQL 'budget'.
+   - HINT: Check for 'SLASH BUDGET' recommendations. Match file 'Department: Sales' with SQL 'name'='Sales'.
 
 2. LEGACY SYSTEMS:
    - SQL: 'projects' table (project_name, priority, budget, status)
@@ -284,7 +318,8 @@ DATABASE HINTS & FILES:
    - HINT: If file says "Decommissioning" or "Deprecated", SQL should NOT list it as "Critical" or have high budget.
 
 3. PRODUCT STRATEGY:
-   - SQL: 'products' table (product_name, launch_date, priority)
+   - SQL: 'products' table. Columns: [id, name, launch_date, priority].
+   - CRITICAL: The column is 'name', NOT 'product_name'.
    - FILE: 'Product_Strategy.csv'
    - HINT: CSV 'Launch_Date' is the source of truth. If SQL differs, update SQL.
 
@@ -292,6 +327,12 @@ DATABASE HINTS & FILES:
    - SQL: 'vendors' table (vendor_name, status)
    - FILE: 'Vendor_Legal_Notes.md'
    - HINT: If Legal says "Dispute" or "Do not process", SQL status must be "On Hold" or "Suspended", NOT "Active".
+- 'name' column exists in 'departments' but NOT in 'employees' (use 'first_name', 'last_name').
+
+MISSING TABLES or DATA?
+- If you find a 'no such table' error, CREATE the table first.
+- If an `execute_sql_update` (UPDATE) returns "Rows affected: 0", it means the record does not exist. You MUST then use `INSERT` to add it.
+- Example: "INSERT INTO vendors (vendor_name, status) VALUES ('Acme Corp', 'On Hold');"
 
 TOOLS AVAILABLE:
 {tool_desc}
