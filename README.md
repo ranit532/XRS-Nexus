@@ -842,6 +842,69 @@ flowchart TD
 
 ---
 
+## 8. Troubleshooting
+
+Common issues and fixes:
+
+*   **"Ollama Connection Refused"**: Ensure Ollama is running (`ollama serve`).
+*   **"Loop Detected"**: The Agent prevents infinite loops. If it gets stuck, try rephrasing the question.
+*   **"Database Locked"**: Ensure no other process (like DB Browser) has an exclusive lock on `complex_erp.db`.
+
+---
+
+## 9. End-to-End Remediation Testing Guide (Stage 4)
+
+This section details how to verify the **AI Audit & Fix** capability, where the Agent autonomously identifies discrepancies across 4 different domains and proposes remediation.
+
+### 9.1. The 4-Way Audit Scope
+When you click **"AI Audit & Fix"**, the Agent performs a cross-domain check:
+
+1.  **Budgets**: SQL `departments` table vs `data/unstructured/Budget_Review.md`
+2.  **Legacy Systems**: SQL `projects` table vs `data/unstructured/Legacy_System_Notes.md`
+3.  **Product Strategy**: SQL `products` table vs `data/unstructured/Product_Strategy.csv`
+4.  **Vendor Legal**: SQL `vendors` table vs `data/unstructured/Vendor_Legal_Notes.md`
+
+### 9.2. "Sunny Day" Flow (Happy Path)
+
+**Goal**: Verify the Agent correctly identifies a discrepancy and updates the source of truth upon approval.
+
+1.  **Trigger**: Click the **"AI Audit & Fix"** button in the dashboard.
+2.  **Observation**: The Agent will start streaming its thought process.
+3.  **Proposal**:
+    *   *Agent*: "I found a discrepancy. Budget file says 'Slash by 50%', but SQL shows \$770k. I propose updating SQL to \$385k."
+    *   *UI*: A "Review Proposal" box appears with the SQL Query pre-filled.
+4.  **Action**: Click **"Approve Action"**.
+5.  **Result**:
+    *   The Agent executes the SQL update.
+    *   It moves to the next domain (e.g., Legacy Systems) without stopping.
+    *   Final output confirms all 4 domains have been audited.
+
+### 9.3. "Rainy Day" Flow (Edge Cases & Feedback)
+
+**Goal**: Verify the "Human-in-the-Loop" control by modifying or rejecting the Agent's proposal.
+
+#### Scenario A: Runtime Argument Editing
+1.  **Trigger**: Agent proposes: "Update Budget to \$385,000".
+2.  **Action**:
+    *   In the UI "Review Proposal" box, locate the **SQL Query** text area.
+    *   **Edit** the value from `385000` to `400000` (Manual override).
+    *   Click **"Approve Action"**.
+3.  **Result**: The system executes the *modified* query. The Agent logs "User Modified Args" and proceeds.
+
+#### Scenario B: Rejection with Feedback
+1.  **Trigger**: Agent proposes: "Decommission 'Customer API' project".
+2.  **Action**:
+    *   In the text input field, type: *"No, this project was extended until 2027."*
+    *   Click **"REJECT"**.
+3.  **Result**:
+    *   The Agent saves this feedback.
+    *   It may attempt a different tool or move to the next item in the checklist, acknowledging the user's constraint.
+
+### 9.4. Verification
+To confirm changes were applied:
+*   **SQL Updates**: Use the "SQLite Viewer" extension in VS Code to check `data/complex_erp.db`.
+*   **File Updates**: Open the relevant file in VS Code (e.g., `Budget_Review.md`) to see the text replacement.
+
 ## 10. Complex Data Chatbot & AI Synergy Flow
 
 ### Overview
