@@ -1,0 +1,6 @@
+Product,Launch_Date,Priority,Budget_Cap
+AI Copilot,2026-06-01,High,500000
+Mobile App v2,2026-03-15,Medium,150000
+Web Portal,2026-09-01,Low,50000
+Analytics Dashboard,2026-05-01,High,300000
+DISCREPANCY_NOTE: The 'AI Copilot' launch date in SQL 'products' table is set to 2025-12-01 (impossible). Please update SQL to match this CSV.

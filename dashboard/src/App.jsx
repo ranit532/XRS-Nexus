@@ -153,7 +153,7 @@ const SynergyValidator = ({ show, onClose, onComplete }) => {
       const res = await fetch('http://localhost:5001/api/synergy/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: "Perform a system-wide audit of the Engineering, Sales, and Support departments. Compare their SQL database budgets against the 'Budget_Review.md' file and flag any discrepancies." })
+        body: JSON.stringify({ question: "Perform a system-wide audit. 1) Check 'Budget_Review.md' against Department budgets. 2) Check 'Legacy_System_Notes.md' against Project priorities. 3) Check 'Product_Strategy.csv' launch dates. 4) Check 'Vendor_Legal_Notes.md' for disputes. Flag ALL discrepancies." })
       });
       const data = await res.json();
       setHistory([data.event]);

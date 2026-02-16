@@ -264,7 +264,7 @@ class ComplexQueryEngine:
         Generator that yields events for each step of the agent's reasoning.
         Useful for streaming UI updates.
         """
-        # System Prompt with Tool Definitions for ReAct
+# System Prompt with Tool Definitions for ReAct
         tool_desc = json.dumps([t["function"] for t in self.tools], indent=2)
         system_prompt = f"""You are a 'Synergy Bot', a highly capable enterprise assistant. 
 You have access to a complex database (30 tables) and a repository of unstructured documents.
@@ -272,11 +272,26 @@ You have access to a complex database (30 tables) and a repository of unstructur
 Your goal is to answer User questions by connecting the dots between Structured Data (SQL) and Unstructured Data (Files).
 CRITICAL: If you find a discrepancy, you must PROPOSE A FIX using `update_file` or `execute_sql_update`.
 
-DATABASE HINTS:
-- 'departments' columns: [id, name, location, budget]. Use 'id' for joins, NOT 'department_id'.
-- 'employees' columns: [id, first_name, last_name, dept_id, role_id].
-- To join employees and departments: ON employees.dept_id = departments.id
-- 'name' column exists in 'departments' but NOT in 'employees' (use 'first_name', 'last_name').
+DATABASE HINTS & FILES:
+1. BUDGETS:
+   - SQL: 'departments' table (id, budget)
+   - FILE: 'Budget_Review.md'
+   - HINT: Check for 'SLASH BUDGET' recommendations in the file and match with SQL 'budget'.
+
+2. LEGACY SYSTEMS:
+   - SQL: 'projects' table (project_name, priority, budget, status)
+   - FILE: 'Legacy_System_Notes.md'
+   - HINT: If file says "Decommissioning" or "Deprecated", SQL should NOT list it as "Critical" or have high budget.
+
+3. PRODUCT STRATEGY:
+   - SQL: 'products' table (product_name, launch_date, priority)
+   - FILE: 'Product_Strategy.csv'
+   - HINT: CSV 'Launch_Date' is the source of truth. If SQL differs, update SQL.
+
+4. VENDOR LEGAL:
+   - SQL: 'vendors' table (vendor_name, status)
+   - FILE: 'Vendor_Legal_Notes.md'
+   - HINT: If Legal says "Dispute" or "Do not process", SQL status must be "On Hold" or "Suspended", NOT "Active".
 
 TOOLS AVAILABLE:
 {tool_desc}
@@ -301,19 +316,25 @@ RULES:
         # Track previous actions to prevent loops
         previous_actions = []
 
-        # Max turns to prevent infinite loops
-        for turn in range(15):
-            # --- FORCE FINISH HEURISTIC ---
-            # If agent has both SQL data (budget) and File data (review), force it to conclude.
-            has_sql = any("run_sql_query" in x for x in previous_actions)
-            has_file = any("read_file" in x for x in previous_actions)
-            # Relax heuristic for update flows - only force finish if we are NOT in an update loop
-            has_update = any("update_file" in x or "execute_sql_update" in x for x in previous_actions)
+        # Track domains covered for smart prompting
+        covered_domains = {
+            "budget": False,
+            "legacy": False,
+            "product": False,
+            "vendor": False
+        }
 
-            if has_sql and has_file and not has_update:
-                 last_msg = messages[-1]["content"] if messages else ""
-                 if "STOP using tools" not in last_msg:
-                     messages.append({"role": "user", "content": "SYSTEM: You have retrieved both Structured Data (SQL) and Unstructured Data (File). If you found a discrepancy, call `update_file` or `execute_sql_update` to fix it. Otherwise, STOP using tools and provide your 'final_answer' JSON immediately."})
+        # Max turns to prevent infinite loops (Increased for multi-step audit)
+        for turn in range(35):
+            # --- SMART CHECKLIST HEURISTIC ---
+            # Check what has been covered based on tools used
+            action_history = str(previous_actions).lower()
+            if "budget_review.md" in action_history: covered_domains["budget"] = True
+            if "legacy_system_notes.md" in action_history: covered_domains["legacy"] = True
+            if "product_strategy.csv" in action_history: covered_domains["product"] = True
+            if "vendor_legal_notes.md" in action_history: covered_domains["vendor"] = True
+            
+            pending_domains = [k for k, v in covered_domains.items() if not v]
 
             try:
                 print(f"--- Calling LLM (Turn {turn+1})... Please wait. ---")
@@ -322,7 +343,7 @@ RULES:
                     model=self.model,
                     messages=messages,
                     temperature=0.1,
-                    response_format={ "type": "json_object" } # Force JSON mode if supported
+                    response_format={ "type": "json_object" }
                 )
                 
                 content = response.choices[0].message.content
@@ -330,54 +351,45 @@ RULES:
                 # Yield raw thought
                 yield {"type": "thought", "content": content, "turn": turn}
                 
-                # 2. Parsing Step - Robust JSON extraction
+                # 2. Parsing Step
                 import re
                 action = None
                 parse_content = content.strip()
                 
-                # Strategy 1: Strip markdown code blocks
                 if "```" in parse_content:
                     code_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", parse_content, re.DOTALL)
-                    if code_match:
-                        parse_content = code_match.group(1)
+                    if code_match: parse_content = code_match.group(1)
                 
-                # Strategy 2: Direct JSON parse
                 try:
                     action = json.loads(parse_content)
                 except json.JSONDecodeError:
                     pass
                 
-                # Strategy 3: Greedy regex for JSON object
                 if action is None:
                     match = re.search(r'\{.*\}', parse_content, re.DOTALL)
                     if match:
                         try:
                             action = json.loads(match.group(0))
-                        except json.JSONDecodeError:
-                            # Strategy 4: Non-greedy regex (first JSON object)
-                            match2 = re.search(r'\{[^{}]*\}', parse_content)
-                            if match2:
-                                try:
-                                    action = json.loads(match2.group(0))
-                                except json.JSONDecodeError:
-                                    pass
-                
+                        except:
+                            pass
+                            
                 # --- HARD FALLBACK ---
-                # If ALL parsing failed, check if we have enough data to finish
                 if action is None:
-                    has_sql_fb = any("run_sql_query" in x for x in previous_actions)
-                    has_file_fb = any("read_file" in x for x in previous_actions)
-                    
-                    if has_sql_fb and has_file_fb:
-                        print("DEBUG: HARD FALLBACK - Treating raw text as Final Answer.")
+                     if turn > 5:
                         action = {"final_answer": content}
-                    else:
+                     else:
                         yield {"type": "error", "content": "Failed to parse JSON response."}
-                        messages.append({"role": "user", "content": "Error: Your response was not valid JSON. You MUST output ONLY a JSON object like {\"tool\": ...} or {\"final_answer\": ...}."})
+                        messages.append({"role": "user", "content": "Error: Invalid JSON. Output ONLY JSON."})
                         continue
 
                 # 3. Execution Step
                 if "final_answer" in action:
+                    # BLOCK EARLY EXIT if pending domains exist
+                    if pending_domains and turn < 25:
+                        yield {"type": "thought", "content": f"Agent tried to exit but pending domains remain: {pending_domains}"}
+                        messages.append({"role": "user", "content": f"SYSTEM: You have NOT completed the full audit. You still need to check: {pending_domains}. Continue working."})
+                        continue
+                        
                     yield {"type": "final_answer", "content": action['final_answer']}
                     return
                 
@@ -386,11 +398,10 @@ RULES:
                     args = action.get("args", {})
 
                     # --- LOOP DETECTION ---
-                    # Relax loop detection for updates (might need to retry if failed)
                     action_signature = f"{func_name}:{json.dumps(args, sort_keys=True)}"
                     if action_signature in previous_actions:
                          yield {"type": "error", "content": f"Loop Detected: You already called {func_name} with these args."}
-                         messages.append({"role": "user", "content": f"SYSTEM: You already executed '{func_name}' with these arguments and received the result. Do NOT repeat it. Use the previous result to formulate your Final Answer."})
+                         messages.append({"role": "user", "content": f"SYSTEM: You already executed '{func_name}' with these arguments. Do NOT repeat it."})
                          continue
                     previous_actions.append(action_signature)
                     
