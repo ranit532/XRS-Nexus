@@ -20,6 +20,22 @@ const MOCK_AI_LOGS = [
   { id: 5, type: 'info', text: 'Updating lineage graph for silver -> gold transition.' },
 ];
 
+// Safely render/inspect values coming from backend streaming events.
+// Prevents React crashes like: "Objects are not valid as a React child".
+const safeStringify = (value) => {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch (e) {
+    try {
+      return String(value);
+    } catch {
+      return '[unrenderable]';
+    }
+  }
+};
+
 // --- Console Modal Component (Defined Outside to prevent re-renders) ---
 const PipelineConsoleModal = ({ showModal, setShowModal, actionStatus, displayLogs }) => {
   const scrollRef = React.useRef(null);
@@ -158,6 +174,14 @@ const SynergyValidator = ({ show, onClose, onComplete }) => {
       });
       const data = await res.json();
 
+      // Handle backend error payloads gracefully (don't crash UI)
+      if (data.status === 'error') {
+        setHistory(prev => [...prev, { type: 'error', content: data.message || 'Synergy backend returned an error.' }]);
+        setStatus('completed');
+        setPendingAction(null);
+        return;
+      }
+
       if (data.event) {
         setHistory(prev => [...prev, data.event]);
 
@@ -181,22 +205,39 @@ const SynergyValidator = ({ show, onClose, onComplete }) => {
     } catch (e) {
       console.error(e);
       setHistory(prev => [...prev, { type: 'error', content: 'Connection lost. Retrying...' }]);
-      setTimeout(() => processNextStep(), 3000);
+      setTimeout(() => processNextStep(), 60000);
     }
   };
 
-  const handleApprove = () => {
-    setPendingAction(null);
-    setStatus('running');
-    processNextStep("APPROVE");
-  };
+  // Handles user feedback (Approve/Reject) with optional edited args
+  const handleFeedback = (isApproved, feedbackText = "") => {
+    let finalFeedback = "";
 
-  const handleReject = () => {
-    if (!feedback) return;
+    if (!isApproved) {
+      finalFeedback = `REJECT: ${feedbackText || "User stopped execution."}`;
+    } else {
+      // APPROVE FLow
+      // Check if we need to scrape edited args for remediation tools
+      if (pendingAction && (pendingAction.tool === 'update_file' || pendingAction.tool === 'execute_sql_update')) {
+        const i = history.length - 1;
+        const newArgs = { ...pendingAction.args };
+
+        const queryInput = document.getElementById(`edit-arg-${i}-query`);
+        if (queryInput) newArgs.query = queryInput.value;
+
+        const replaceInput = document.getElementById(`edit-arg-${i}-replacement_text`);
+        if (replaceInput) newArgs.replacement_text = replaceInput.value;
+
+        finalFeedback = `APPROVE_WITH_ARGS: ${JSON.stringify(newArgs)}`;
+      } else {
+        finalFeedback = "APPROVE";
+      }
+    }
+
     setPendingAction(null);
-    setStatus('running');
-    processNextStep(`REJECT: ${feedback}`);
-    setFeedback('');
+    setStatus('running'); // Resume spinner
+    processNextStep(finalFeedback);
+    setFeedback(''); // Clear local feedback state
   };
 
   if (!show) return null;
@@ -280,34 +321,135 @@ const SynergyValidator = ({ show, onClose, onComplete }) => {
                     {ev.type === 'thought' && (
                       <div className="flex gap-4 group">
                         <div className="text-slate-600">THOUGHT &gt;</div>
-                        <div className="text-slate-300 italic">{ev.content}</div>
+                        <div className="text-slate-300 italic whitespace-pre-wrap break-words">{safeStringify(ev.content)}</div>
                       </div>
                     )}
                     {ev.type === 'request_approval' && (
                       <div className="bg-gradient-to-br from-amber-500/10 to-transparent border border-amber-500/30 p-6 rounded-2xl text-amber-200 my-4 shadow-lg shadow-amber-900/20">
                         <p className="font-bold flex items-center gap-2 mb-2 text-amber-400"><AlertTriangle size={16} /> HUMAN-IN-THE-LOOP REQUIRED</p>
-                        <div className="pl-6 border-l-2 border-amber-500/30 space-y-2">
+
+                        <div className="pl-6 border-l-2 border-amber-500/30 space-y-4">
                           <p className="text-sm">Agent intends to execute: <span className="font-bold text-white bg-amber-600/30 px-2 py-0.5 rounded">{ev.tool}</span></p>
-                          <div className="bg-black/30 p-3 rounded-lg overflow-x-auto">
-                            <code className="text-amber-100/70">{JSON.stringify(ev.args, null, 2)}</code>
-                          </div>
+
+                          {/* REMEDIATION UI: Editable Args for Updates */}
+                          {(ev.tool === 'update_file' || ev.tool === 'execute_sql_update') ? (
+                            <div className="bg-black/40 p-4 rounded-xl border border-amber-500/20">
+                              <h5 className="text-xs font-bold text-amber-500 uppercase tracking-widest mb-2">Review & Edit Proposal</h5>
+
+                              {ev.tool === 'execute_sql_update' && (
+                                <div>
+                                  <label className="text-[10px] text-slate-400">SQL Query</label>
+                                  <textarea
+                                    defaultValue={ev.args.query}
+                                    id={`edit-arg-${i}-query`}
+                                    className="w-full bg-slate-900 text-emerald-400 font-mono text-sm p-3 rounded-lg border border-slate-700 focus:border-emerald-500 outline-none"
+                                    rows={3}
+                                  />
+                                </div>
+                              )}
+
+                              {ev.tool === 'update_file' && (
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="text-[10px] text-slate-400">Target File</label>
+                                    <input disabled value={ev.args.filename} className="w-full bg-slate-800/50 text-slate-400 font-mono text-xs p-2 rounded border border-slate-700" />
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <label className="text-[10px] text-slate-400">Find (Original)</label>
+                                      <div className="bg-red-900/20 text-red-300 font-mono text-xs p-2 rounded border border-red-900/30 whitespace-pre-wrap">{ev.args.search_text}</div>
+                                    </div>
+                                    <div>
+                                      <label className="text-[10px] text-slate-400">Replace (Proposed)</label>
+                                      <textarea
+                                        defaultValue={ev.args.replacement_text}
+                                        id={`edit-arg-${i}-replacement_text`}
+                                        className="w-full bg-emerald-900/20 text-emerald-300 font-mono text-xs p-2 rounded border border-emerald-900/30 focus:border-emerald-500 outline-none"
+                                        rows={3}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              <p className="text-[10px] text-slate-500 mt-2 italic">* You can modify the 'Proposed' values above before approving.</p>
+                            </div>
+                          ) : (
+                            // Read-only for other tools
+                            <div className="bg-black/30 p-3 rounded-lg overflow-x-auto">
+                              <code className="text-amber-100/70 whitespace-pre-wrap break-words">{safeStringify(ev.args)}</code>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
                     {ev.type === 'tool_result' && (
                       <div className="text-emerald-500/60 pl-16 text-[10px] truncate cursor-help border-l-2 border-emerald-900 pl-2 ml-14" title={ev.content}>
-                        RESULT :: {ev.content}
+                        RESULT :: {safeStringify(ev.content)}
                       </div>
                     )}
                     {ev.type === 'final_answer' && (
-                      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 rounded-3xl text-white shadow-2xl my-6 border border-blue-400/30">
-                        <h4 className="font-black text-2xl mb-4 flex items-center gap-3"><ShieldCheck size={28} /> VALIDATION COMPLETE</h4>
-                        <p className="text-base leading-relaxed font-sans">{ev.content}</p>
+                      <div className="relative overflow-hidden bg-slate-900/90 backdrop-blur-xl p-8 rounded-3xl border border-emerald-500/30 shadow-[0_0_50px_-12px_rgba(16,185,129,0.25)] my-6 group">
+                        <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity">
+                          <ShieldCheck size={120} className="text-emerald-500" />
+                        </div>
+
+                        <div className="relative z-10">
+                          <h4 className="font-black text-3xl mb-6 flex items-center gap-3 text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+                            <ShieldCheck size={32} className="text-emerald-400" />
+                            VALIDATION COMPLETE
+                          </h4>
+
+                          {/* Try to parse JSON for rich display, fallback to text */}
+                          {(() => {
+                            try {
+                              const data = typeof ev.content === 'string' ? JSON.parse(ev.content) : ev.content;
+                              return (
+                                <div className="space-y-6">
+                                  {data.discrepancy && (
+                                    <div className="bg-red-500/10 border border-red-500/50 p-4 rounded-xl flex items-center gap-4 animate-pulse">
+                                      <div className="bg-red-500 p-2 rounded-full">
+                                        <AlertTriangle size={24} className="text-white" />
+                                      </div>
+                                      <div>
+                                        <h5 className="font-bold text-red-400 uppercase tracking-wider text-xs">Critical Alert</h5>
+                                        <p className="text-white font-semibold">Budget Discrepancy Detected</p>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  <div className="grid grid-cols-2 gap-4">
+                                    {Object.entries(data).map(([key, value]) => (
+                                      key !== 'discrepancy' && (
+                                        <div key={key} className="bg-white/5 border border-white/10 p-4 rounded-xl hover:bg-white/10 transition-colors">
+                                          <p className="text-slate-400 text-xs uppercase tracking-widest mb-1">{key.replace(/_/g, ' ')}</p>
+                                          <p className="text-white font-mono text-lg font-medium truncate" title={String(value)}>{String(value)}</p>
+                                        </div>
+                                      )
+                                    ))}
+                                  </div>
+
+                                  <div className="pt-4 flex gap-3">
+                                    <button className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-emerald-900/20 active:scale-95 transition-all flex items-center justify-center gap-2">
+                                      <Download size={18} /> Export Full Report
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            } catch (e) {
+                              return (
+                                <p className="text-lg text-slate-300 leading-relaxed font-sans border-l-4 border-emerald-500/50 pl-6 py-2">
+                                  {safeStringify(ev.content)}
+                                </p>
+                              );
+                            }
+                          })()}
+                        </div>
                       </div>
                     )}
                     {ev.type === 'error' && (
                       <div className="text-red-400 bg-red-900/20 p-4 rounded-lg border border-red-500/30">
-                        ERROR: {ev.content}
+                        ERROR: {safeStringify(ev.content)}
                       </div>
                     )}
                   </motion.div>
@@ -329,17 +471,17 @@ const SynergyValidator = ({ show, onClose, onComplete }) => {
                       <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" /> Awaiting your feedback
                     </h4>
                     <div className="flex gap-4">
-                      <button onClick={handleApprove} className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2 uppercase tracking-wide">
+                      <button onClick={() => handleFeedback(true)} className="flex-1 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-black rounded-xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2 uppercase tracking-wide">
                         <ShieldCheck size={20} /> Approve Action
                       </button>
                       <div className="flex-[2] flex gap-2">
                         <input
                           value={feedback}
                           onChange={(e) => setFeedback(e.target.value)}
-                          placeholder="Provide correction feedback (e.g., 'Check a different file')..."
+                          placeholder="Provide correction feedback..."
                           className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-6 text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500 focus:bg-slate-800 transition-colors"
                         />
-                        <button onClick={handleReject} className="px-8 py-4 bg-slate-800 hover:bg-red-500 hover:text-white text-slate-400 font-bold rounded-xl transition-all border border-slate-700 hover:border-red-500 active:scale-95">
+                        <button onClick={() => handleFeedback(false, feedback)} className="px-8 py-4 bg-slate-800 hover:bg-red-500 hover:text-white text-slate-400 font-bold rounded-xl transition-all border border-slate-700 hover:border-red-500 active:scale-95">
                           REJECT
                         </button>
                       </div>
@@ -739,16 +881,27 @@ const Dashboard = () => {
             { id: 'generate', label: '1. Generate Data', icon: FileCheck, color: 'bg-pink-50 text-pink-600 border-pink-100 hover:bg-pink-100' },
             { id: 'upload', label: '2. Push to ADLS', icon: Database, color: 'bg-amber-50 text-amber-600 border-amber-100 hover:bg-amber-100' },
             { id: 'trigger', label: '3. Run ADF Pipeline', icon: Zap, color: 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100' },
-            { id: 'validate', label: '4. AI Validation', icon: Cpu, color: 'bg-purple-50 text-purple-600 border-purple-100 hover:bg-purple-100' }
+            {
+              id: 'validate',
+              label: '4. AI Audit & Fix',
+              icon: ShieldCheck,
+              color: 'bg-purple-50 text-purple-600 border-purple-100 hover:bg-purple-100 shadow-purple-200 shadow-lg'
+            }
           ].map((action, i) => (
             <button
               key={action.id}
               disabled={actionStatus.is_running}
-              onClick={() => triggerAction(action.id)}
+              onClick={() => {
+                if (action.id === 'validate') {
+                  setShowSynergy(true);
+                } else {
+                  triggerAction(action.id);
+                }
+              }}
               className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 group ${action.color} ${actionStatus.is_running ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:scale-[1.02] active:scale-95'}`}
             >
               <div className="flex items-center gap-4">
-                <div className="p-2 bg-white rounded-xl shadow-sm group-hover:shadow-md transition-shadow">
+                <div className={`p-2 bg-white rounded-xl shadow-sm group-hover:shadow-md transition-shadow ${action.id === 'validate' ? 'animate-pulse' : ''}`}>
                   <action.icon size={20} />
                 </div>
                 <span className="text-sm font-black tracking-tighter uppercase">{action.label}</span>

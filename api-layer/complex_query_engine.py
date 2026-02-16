@@ -108,6 +108,36 @@ class ComplexQueryEngine:
                         "required": ["filename"]
                     }
                 }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "update_file",
+                    "description": "Updates a text file by replacing a specific string with a new one. Use for fixing discrepancies in unstructured data.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "filename": {"type": "string", "description": "Name of the file to update"},
+                            "search_text": {"type": "string", "description": "The exact text to find and replace"},
+                            "replacement_text": {"type": "string", "description": "The new text to insert"}
+                        },
+                        "required": ["filename", "search_text", "replacement_text"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "execute_sql_update",
+                    "description": "Executes a SQL data modification query (UPDATE, INSERT, DELETE). Use for fixing discrepancies in structured data.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "query": {"type": "string", "description": "The SQL query to execute (must be UPDATE, INSERT, or DELETE)"}
+                        },
+                        "required": ["query"]
+                    }
+                }
             }
         ]
 
@@ -129,6 +159,11 @@ class ComplexQueryEngine:
 
     def _run_sql_query(self, query):
         try:
+            # Handle list input (AI edge case)
+            if isinstance(query, list):
+                if not query: return "Error: Empty query list."
+                query = query[0]
+
             conn = sqlite3.connect(DB_PATH)
             # Use dictionary cursor for readability
             conn.row_factory = sqlite3.Row
@@ -139,6 +174,25 @@ class ComplexQueryEngine:
             return json.dumps([dict(row) for row in rows], default=str)
         except Exception as e:
             return f"Error executing SQL: {e}"
+
+    def _execute_sql_update(self, query):
+        try:
+            # Handle list input
+            if isinstance(query, list): query = query[0]
+            
+            # Simple security check (in real app, use stricter granular permissions)
+            if not any(kw in query.upper() for kw in ["UPDATE", "INSERT", "DELETE"]):
+                return "Error: Only UPDATE, INSERT, or DELETE queries are allowed for this tool."
+
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+            cursor.execute(query)
+            conn.commit()
+            changes = conn.total_changes
+            conn.close()
+            return f"Success: {changes} rows affected."
+        except Exception as e:
+            return f"Error executing SQL Update: {e}"
 
     def _list_files(self):
         files = glob.glob(f"{UNSTRUCTURED_DIR}/*")
@@ -153,6 +207,26 @@ class ComplexQueryEngine:
                 return f.read()
         except Exception as e:
             return f"Error reading file: {e}"
+
+    def _update_file(self, filename, search_text, replacement_text):
+        filepath = os.path.join(UNSTRUCTURED_DIR, filename)
+        if not os.path.exists(filepath):
+            return "File not found."
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                content = f.read()
+            
+            if search_text not in content:
+                return "Error: 'search_text' not found in file. Please ensure exact match including whitespace."
+            
+            new_content = content.replace(search_text, replacement_text)
+            
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(new_content)
+                
+            return "Success: File updated."
+        except Exception as e:
+            return f"Error updating file: {e}"
 
     # --- Agent Logic ---
 
@@ -196,6 +270,13 @@ class ComplexQueryEngine:
 You have access to a complex database (30 tables) and a repository of unstructured documents.
 
 Your goal is to answer User questions by connecting the dots between Structured Data (SQL) and Unstructured Data (Files).
+CRITICAL: If you find a discrepancy, you must PROPOSE A FIX using `update_file` or `execute_sql_update`.
+
+DATABASE HINTS:
+- 'departments' columns: [id, name, location, budget]. Use 'id' for joins, NOT 'department_id'.
+- 'employees' columns: [id, first_name, last_name, dept_id, role_id].
+- To join employees and departments: ON employees.dept_id = departments.id
+- 'name' column exists in 'departments' but NOT in 'employees' (use 'first_name', 'last_name').
 
 TOOLS AVAILABLE:
 {tool_desc}
@@ -222,7 +303,20 @@ RULES:
 
         # Max turns to prevent infinite loops
         for turn in range(15):
+            # --- FORCE FINISH HEURISTIC ---
+            # If agent has both SQL data (budget) and File data (review), force it to conclude.
+            has_sql = any("run_sql_query" in x for x in previous_actions)
+            has_file = any("read_file" in x for x in previous_actions)
+            # Relax heuristic for update flows - only force finish if we are NOT in an update loop
+            has_update = any("update_file" in x or "execute_sql_update" in x for x in previous_actions)
+
+            if has_sql and has_file and not has_update:
+                 last_msg = messages[-1]["content"] if messages else ""
+                 if "STOP using tools" not in last_msg:
+                     messages.append({"role": "user", "content": "SYSTEM: You have retrieved both Structured Data (SQL) and Unstructured Data (File). If you found a discrepancy, call `update_file` or `execute_sql_update` to fix it. Otherwise, STOP using tools and provide your 'final_answer' JSON immediately."})
+
             try:
+                print(f"--- Calling LLM (Turn {turn+1})... Please wait. ---")
                 # 1. Inference Step
                 response = self.client.chat.completions.create(
                     model=self.model,
@@ -232,20 +326,54 @@ RULES:
                 )
                 
                 content = response.choices[0].message.content
+                print(f"DEBUG RAW LLM OUTPUT (Turn {turn+1}): {content[:500]}")
                 # Yield raw thought
                 yield {"type": "thought", "content": content, "turn": turn}
                 
-                # 2. Parsing Step
+                # 2. Parsing Step - Robust JSON extraction
+                import re
+                action = None
+                parse_content = content.strip()
+                
+                # Strategy 1: Strip markdown code blocks
+                if "```" in parse_content:
+                    code_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", parse_content, re.DOTALL)
+                    if code_match:
+                        parse_content = code_match.group(1)
+                
+                # Strategy 2: Direct JSON parse
                 try:
-                    action = json.loads(content)
+                    action = json.loads(parse_content)
                 except json.JSONDecodeError:
-                    import re
-                    match = re.search(r'\{.*\}', content, re.DOTALL)
+                    pass
+                
+                # Strategy 3: Greedy regex for JSON object
+                if action is None:
+                    match = re.search(r'\{.*\}', parse_content, re.DOTALL)
                     if match:
-                        action = json.loads(match.group(0))
+                        try:
+                            action = json.loads(match.group(0))
+                        except json.JSONDecodeError:
+                            # Strategy 4: Non-greedy regex (first JSON object)
+                            match2 = re.search(r'\{[^{}]*\}', parse_content)
+                            if match2:
+                                try:
+                                    action = json.loads(match2.group(0))
+                                except json.JSONDecodeError:
+                                    pass
+                
+                # --- HARD FALLBACK ---
+                # If ALL parsing failed, check if we have enough data to finish
+                if action is None:
+                    has_sql_fb = any("run_sql_query" in x for x in previous_actions)
+                    has_file_fb = any("read_file" in x for x in previous_actions)
+                    
+                    if has_sql_fb and has_file_fb:
+                        print("DEBUG: HARD FALLBACK - Treating raw text as Final Answer.")
+                        action = {"final_answer": content}
                     else:
                         yield {"type": "error", "content": "Failed to parse JSON response."}
-                        messages.append({"role": "user", "content": "Error: Your response was not valid JSON. Please try again, outputting ONLY the JSON object."})
+                        messages.append({"role": "user", "content": "Error: Your response was not valid JSON. You MUST output ONLY a JSON object like {\"tool\": ...} or {\"final_answer\": ...}."})
                         continue
 
                 # 3. Execution Step
@@ -258,6 +386,7 @@ RULES:
                     args = action.get("args", {})
 
                     # --- LOOP DETECTION ---
+                    # Relax loop detection for updates (might need to retry if failed)
                     action_signature = f"{func_name}:{json.dumps(args, sort_keys=True)}"
                     if action_signature in previous_actions:
                          yield {"type": "error", "content": f"Loop Detected: You already called {func_name} with these args."}
@@ -281,6 +410,15 @@ RULES:
                         messages.append({"role": "user", "content": f"User stopped execution. Feedback: {feedback}"})
                         continue
                     
+                    # NEW: Allow feedback to OVERRIDE args (e.g., "APPROVE: {new_args}")
+                    if feedback and str(feedback).startswith("APPROVE_WITH_ARGS:"):
+                         try:
+                             new_args_json = feedback.replace("APPROVE_WITH_ARGS:", "", 1).strip()
+                             args = json.loads(new_args_json)
+                             yield {"type": "user_feedback", "content": f"User Modified Args: {args}"}
+                         except Exception as e:
+                             print(f"Error parsing modified args: {e}")
+
                     # If APPROVE or None (default), proceed
                     yield {"type": "tool_call", "tool": func_name, "args": args}
                     
@@ -291,10 +429,14 @@ RULES:
                         result = self._get_table_schema(args.get("table_name"))
                     elif func_name == "run_sql_query":
                         result = self._run_sql_query(args.get("query"))
+                    elif func_name == "execute_sql_update":
+                        result = self._execute_sql_update(args.get("query"))
                     elif func_name == "list_files":
                         result = self._list_files()
                     elif func_name == "read_file":
                         result = self._read_file(args.get("filename"))
+                    elif func_name == "update_file":
+                        result = self._update_file(args.get("filename"), args.get("search_text"), args.get("replacement_text"))
                     
                     # Truncate result
                     truncated_result = result
@@ -309,7 +451,13 @@ RULES:
                     # INTELLIGENT HINTING
                     if func_name == "run_sql_query" and "no such table" in str(result).lower():
                          conversation_content += "\nSYSTEM HINT: The table name seems incorrect. Use 'get_all_table_names' to see the correct schema."
+                    
+                    elif func_name == "read_file":
+                        conversation_content += "\nSYSTEM HINT: You have the file content. Now cross-reference this with your SQL data calculation. If you see a discrepancy (e.g., Budget vs Recommendation), call `update_file` or `execute_sql_update` to fix it. If everything matches, output 'final_answer'."
 
+                    elif func_name in ["update_file", "execute_sql_update"] and "Success" in str(result):
+                        conversation_content += "\nSYSTEM HINT: Fix executed. Now you can provide the 'final_answer' summarizing what was fixed."
+                    
                     messages.append({"role": "assistant", "content": content})
                     messages.append({"role": "user", "content": conversation_content})
                 else:

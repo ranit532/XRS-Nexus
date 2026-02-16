@@ -575,10 +575,39 @@ def synergy_step():
             
         synergy_session["history"].append(event)
         
-        # Check if done
         if event.get("type") == "final_answer":
             synergy_session["status"] = "completed"
             
+            # --- AUDIT LOGGING ---
+            # Save the final validation result to disk for compliance/review
+            try:
+                import json
+                import os
+                from datetime import datetime
+                
+                audit_dir = "data/audit_logs"
+                os.makedirs(audit_dir, exist_ok=True)
+                
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"audit_{timestamp}.json"
+                filepath = os.path.join(audit_dir, filename)
+                
+                audit_record = {
+                    "timestamp": datetime.now().isoformat(),
+                    "question": synergy_session.get("question", "Unknown Question"),
+                    "result": event.get("content"),
+                    "full_history": synergy_session["history"]
+                }
+                
+                with open(filepath, "w") as f:
+                    json.dump(audit_record, f, indent=2)
+                    
+                print(f"✅ Audit Log saved to: {filepath}")
+                event["audit_file"] = filepath # Pass path to frontend if needed
+                
+            except Exception as e:
+                print(f"⚠️ Failed to save Audit Log: {e}")
+
         return jsonify({
             "status": synergy_session["status"],
             "event": event
