@@ -144,6 +144,26 @@ class ComplexQueryEngine:
             }
         ]
 
+        # Pre-fetch schema for key tables to prevent hallucinations
+        self.schema_summary = self._get_schema_summary()
+
+    def _get_schema_summary(self):
+        """Fetches CREATE TABLE statements for key tables to inject into prompt."""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            tables = ["departments", "projects", "products", "vendors"]
+            schema_text = "DATABASE SCHEMA (Source of Truth):\n"
+            for t in tables:
+                res = cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (t,)).fetchone()
+                if res:
+                    schema_text += f"- {t}: {res[0]}\n"
+            conn.close()
+            return schema_text
+        except Exception as e:
+            print(f"Warning: Could not fetch schema summary: {e}")
+            return ""
+
     # --- Tool Implementations ---
 
     def _get_all_table_names(self):
@@ -170,11 +190,17 @@ class ComplexQueryEngine:
                 if not query: return "Error: Empty query list."
                 query = query[0]
 
-            # Sanitize input (strip outer quotes if AI added them)
-            query = query.strip().strip("'").strip('"')
+            # AGGRESSIVE SANITIZATION
+            import re
+            # 1. Strip outer quotes (single or double) if present
+            # Checks if string starts and ends with same quote type
+            if len(query) >= 2 and query[0] in ["'", '"'] and query[0] == query[-1]:
+                query = query[1:-1]
             
-            # FIX: Replace escaped quotes with single quotes for SQLite
+            # 2. Fix escaped quotes commonly sent by LLMs (e.g. \"Sales\") -> 'Sales'
             query = query.replace('\\"', "'").replace("\\'", "'")
+            
+            # 3. Ensure no trailing semicolons inside the string if it causes issues, but usually fine.
 
             conn = sqlite3.connect(DB_PATH)
             # Use dictionary cursor for readability
@@ -185,7 +211,13 @@ class ComplexQueryEngine:
             # Convert to list of dicts
             return json.dumps([dict(row) for row in rows], default=str)
         except Exception as e:
-            return f"Error executing SQL: {e}"
+            error_msg = f"Error executing SQL: {e}"
+            # Smart Hints for common hallucinations
+            if "no such column: department" in str(e).lower():
+                error_msg += " \nSYSTEM HINT: The 'departments' table does NOT have a 'department' column. It uses 'name'. Change your query to use 'name' instead."
+            elif "no such column: product_name" in str(e).lower():
+                error_msg += " \nSYSTEM HINT: The 'products' table uses 'name', NOT 'product_name'."
+            return error_msg
 
     def _execute_sql_update(self, query):
         """
@@ -194,10 +226,18 @@ class ComplexQueryEngine:
         if not query:
             return "Error: Query cannot be empty."
         
-        # Sanitize input
-        query = query.strip().strip("'").strip('"')
-        # FIX: Replace escaped quotes
+        # AGGRESSIVE SANITIZATION
+        import re
+        # 1. Strip outer quotes
+        if len(query) >= 2 and query[0] in ["'", '"'] and query[0] == query[-1]:
+            query = query[1:-1]
+            
+        # 2. Fix escaped quotes
         query = query.replace('\\"', "'").replace("\\'", "'")
+        
+        # 3. Remove commas from numbers (e.g. 176,203.90 -> 176203.90)
+        # Matches digit,digit (to avoid messing up string lists)
+        query = re.sub(r'(\d),(\d)', r'\1\2', query)
 
         # Security check - allow Schema Modification
         allowed_starts = ["UPDATE", "INSERT", "DELETE", "CREATE", "DROP", "ALTER"]
@@ -212,7 +252,12 @@ class ComplexQueryEngine:
             conn.commit()
             return f"Success: Query executed. Rows affected: {cursor.rowcount}"
         except sqlite3.Error as e:
-            return f"Error executing update: {e}"
+            error_msg = f"Error executing update: {e}"
+            if "no such column: department" in str(e).lower():
+                error_msg += " \nSYSTEM HINT: The 'departments' table does NOT have a 'department' column. It uses 'name'. Change your query to use 'name' instead."
+            elif "no such column: product_name" in str(e).lower():
+                error_msg += " \nSYSTEM HINT: The 'products' table uses 'name', NOT 'product_name'."
+            return error_msg
         finally:
             if conn:
                 conn.close()
@@ -305,29 +350,13 @@ You have access to a complex database (30 tables) and a repository of unstructur
 Your goal is to answer User questions by connecting the dots between Structured Data (SQL) and Unstructured Data (Files).
 CRITICAL: If you find a discrepancy, you must PROPOSE A FIX using `update_file` or `execute_sql_update`.
 
-DATABASE HINTS & FILES:
-1. BUDGETS:
-   - SQL: 'departments' table. Columns: [id, name, budget, location]. 
-   - CRITICAL: The column is 'name', NOT 'department'. Use `WHERE name = 'Sales'`, NOT `department = 'Sales'`.
-   - FILE: 'Budget_Review.md'
-   - HINT: Check for 'SLASH BUDGET' recommendations. Match file 'Department: Sales' with SQL 'name'='Sales'.
+{self.schema_summary}
 
-2. LEGACY SYSTEMS:
-   - SQL: 'projects' table (project_name, priority, budget, status)
-   - FILE: 'Legacy_System_Notes.md'
-   - HINT: If file says "Decommissioning" or "Deprecated", SQL should NOT list it as "Critical" or have high budget.
-
-3. PRODUCT STRATEGY:
-   - SQL: 'products' table. Columns: [id, name, launch_date, priority].
-   - CRITICAL: The column is 'name', NOT 'product_name'.
-   - FILE: 'Product_Strategy.csv'
-   - HINT: CSV 'Launch_Date' is the source of truth. If SQL differs, update SQL.
-
-4. VENDOR LEGAL:
-   - SQL: 'vendors' table (vendor_name, status)
-   - FILE: 'Vendor_Legal_Notes.md'
-   - HINT: If Legal says "Dispute" or "Do not process", SQL status must be "On Hold" or "Suspended", NOT "Active".
-- 'name' column exists in 'departments' but NOT in 'employees' (use 'first_name', 'last_name').
+UNSTRUCTURED FILES:
+1. BUDGETS: 'Budget_Review.md' (Check for 'SLASH BUDGET')
+2. LEGACY SYSTEMS: 'Legacy_System_Notes.md' (Check for 'Decommissioning' notes)
+3. PRODUCT STRATEGY: 'Product_Strategy.csv' (Source of Truth for Launch Dates)
+4. VENDOR LEGAL: 'Vendor_Legal_Notes.md' (Check for legal disputes)
 
 MISSING TABLES or DATA?
 - If you find a 'no such table' error, CREATE the table first.
@@ -345,6 +374,10 @@ RULES:
 3. ONLY output the JSON object. Do not add commentary outside the JSON.
 4. OBSERVE the 'Tool Output' from the user carefully. Do NOT repeat the same tool call if you already have the output.
 5. If you have enough information to answer the user's question, IMMEDIATELY output 'final_answer'.
+6. SQL RULES:
+   - Do NOT wrap the entire query in quotes.
+   - Do NOT use commas in numeric values (e.g. 10000.00 not 10,000.00).
+   - Use correct column names from the SCHEMA section above.
 """
 
         messages = [
