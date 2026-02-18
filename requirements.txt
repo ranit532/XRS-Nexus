@@ -6,4 +6,6 @@ openpyxl
 faker
 matplotlib
 networkx
-langchain-openai
+langchain-ollama
+flask
+flask-cors

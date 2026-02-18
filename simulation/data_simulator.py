@@ -77,8 +77,75 @@ class DataSimulator:
             data.append(record)
         return pd.DataFrame(data)
 
+    def generate_csv_data(self, num_records=200):
+        print("Generating structured vendor data (CSV)...")
+        data = []
+        for _ in range(num_records):
+            record = {
+                "vendor_id": fake.company_suffix() + "-" + str(random.randint(100, 999)),
+                "vendor_name": fake.company(),
+                "category": random.choice(["Cloud Services", "Hardware", "Consulting", "Office Supplies"]),
+                "last_contract_review": self.generate_random_date()
+            }
+            data.append(record)
+        df = pd.DataFrame(data)
+        csv_path = os.path.join(self.output_dir, "vendor_contracts.csv")
+        df.to_csv(csv_path, index=False)
+        print(f"Saved CSV to {csv_path}")
+
+    def generate_logs(self, num_entries=50):
+        print("Generating system logs (LOG)...")
+        log_levels = ["INFO", "WARNING", "ERROR", "DEBUG"]
+        log_path = os.path.join(self.output_dir, "system_runtime.log")
+        with open(log_path, "w") as f:
+            for _ in range(num_entries):
+                timestamp = datetime.now() - timedelta(minutes=random.randint(0, 10000))
+                level = random.choice(log_levels)
+                msg = fake.sentence()
+                f.write(f"[{timestamp.strftime('%Y-%m-%d %H:%M:%S')}] {level}: {msg}\n")
+        print(f"Saved logs to {log_path}")
+
+    def generate_txt_notes(self):
+        print("Generating business notes (TXT)...")
+        notes_path = os.path.join(self.output_dir, "discovery_notes.txt")
+        content = f"""
+        Discovery Session: XRS Nexus Project
+        Date: {datetime.now().strftime('%Y-%m-%d')}
+        
+        Key Findings:
+        - Legacy transaction data is stored in Excel sheets named 'Raw_Transactions'.
+        - Customer master data resides in the 'customers' table of the centralized SQLite DB.
+        - Vendor contracts are currently maintained in CSV format for bulk processing.
+        - Important: The lineage from Excel to SQL must be validated by a human.
+        """
+        with open(notes_path, "w") as f:
+            f.write(content)
+        print(f"Saved notes to {notes_path}")
+
+    def generate_pyspark_mock(self):
+        print("Generating ETL scripts (PySpark)...")
+        pyspark_path = os.path.join(self.output_dir, "etl_pipeline_v1.py")
+        content = """from pyspark.sql import SparkSession
+import pyspark.functions as F
+
+spark = SparkSession.builder.appName("XRS_Nexus_ETL").getOrCreate()
+
+# Load raw transactions from Excel/CSV
+raw_df = spark.read.format("csv").option("header", "true").load("vendor_contracts.csv")
+
+# Transformation logic
+# Joining with customer master data from SQLite
+cleaned_df = raw_df.filter(F.col("vendor_id").isNotNull())
+
+# Write to target Gold Layer
+cleaned_df.write.mode("overwrite").parquet("gold_v1/vendor_master")
+"""
+        with open(pyspark_path, "w") as f:
+            f.write(content)
+        print(f"Saved PySpark mock to {pyspark_path}")
+
     def run_simulation(self):
-        print(f"Starting simulation in {self.output_dir}...")
+        print(f"Starting expanded discovery simulation in {self.output_dir}...")
         
         # 1. Generate Structured Data (Customers)
         print("Generating structured customer data (SQLite)...")
@@ -90,17 +157,12 @@ class DataSimulator:
         print(f"Saved customers to {self.db_path}")
 
         # 2. Generate Unstructured Data (Transactions in Excel)
-        # In a real scenario, this might be a raw dump from a legacy system
         print("Generating unstructured transaction data (Excel)...")
-        # We use customer IDs from the structured data to create a link
         customer_ids = df_customers['customer_id'].tolist()
         df_transactions = self.generate_transaction_data(customer_ids, num_records=1000)
         
-        # Add some macro-like structure or metadata sheet to simulate complexity
         with pd.ExcelWriter(self.excel_path, engine='openpyxl') as writer:
             df_transactions.to_excel(writer, sheet_name='Raw_Transactions', index=False)
-            
-            # Metadata sheet explaining the "schema" loosely
             metadata = pd.DataFrame([
                 {"Column": "transaction_id", "Description": "Unique ID"},
                 {"Column": "customer_id", "Description": "Link to Customer DB"},
@@ -108,9 +170,15 @@ class DataSimulator:
                 {"Column": "product", "Description": "Product Name"}
             ])
             metadata.to_excel(writer, sheet_name='_Metadata', index=False)
-            
         print(f"Saved transactions to {self.excel_path}")
-        print("Simulation complete.")
+
+        # 3. New Data discovery Formats
+        self.generate_csv_data()
+        self.generate_logs()
+        self.generate_txt_notes()
+        self.generate_pyspark_mock()
+
+        print("Discovery Simulation complete.")
 
 if __name__ == "__main__":
     sim = DataSimulator()

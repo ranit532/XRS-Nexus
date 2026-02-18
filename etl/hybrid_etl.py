@@ -35,8 +35,30 @@ class HybridETLProcessor:
         print(f"Logged lineage: {source} -> {target}")
 
     def run_etl(self):
-        print("Starting ETL Process...")
+        print("Starting Expanded Discovery & ETL Process...")
         
+        # Discovery Phase Lineage
+        self.log_lineage(
+            source="file://data/simulation/vendor_contracts.csv",
+            target="discovery_registry",
+            transformation="Registry Scan: Vendor Data"
+        )
+        self.log_lineage(
+            source="file://data/simulation/system_runtime.log",
+            target="discovery_registry",
+            transformation="Registry Scan: Runtime Logs"
+        )
+        self.log_lineage(
+            source="file://data/simulation/discovery_notes.txt",
+            target="discovery_registry",
+            transformation="Registry Scan: Discovery Notes"
+        )
+        self.log_lineage(
+            source="file://data/simulation/etl_pipeline_v1.py",
+            target="discovery_registry",
+            transformation="Registry Scan: PySpark Logic"
+        )
+
         # 1. READ: Extract from Unstructured Source
         print(f"Reading from {self.excel_path}...")
         try:
@@ -53,6 +75,14 @@ class HybridETLProcessor:
         # 2. TRANSFORM: Clean Data
         print("Transforming data...")
         total_rows = len(df_raw)
+        
+        # Mocking a suggested correction for the HITL flow
+        self.log_lineage(
+            source="memory_dataframe",
+            target="memory_dataframe_clean",
+            transformation="CLEANING_PENDING_APPROVAL: Found anomalous transaction amounts. Suggested Correction: Limit max amount to 10000.0",
+            status="PENDING_APPROVAL"
+        )
         
         # Fix Null Names (if any) by looking up in DB (simulated join/repair)
         # For this POC, we'll just fillna or drop

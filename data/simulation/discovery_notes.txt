@@ -1,0 +1,10 @@
+
+        Discovery Session: XRS Nexus Project
+        Date: 2026-02-18
+        
+        Key Findings:
+        - Legacy transaction data is stored in Excel sheets named 'Raw_Transactions'.
+        - Customer master data resides in the 'customers' table of the centralized SQLite DB.
+        - Vendor contracts are currently maintained in CSV format for bulk processing.
+        - Important: The lineage from Excel to SQL must be validated by a human.
+        

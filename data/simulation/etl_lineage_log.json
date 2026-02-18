@@ -19,5 +19,180 @@
         "target": "sqlite://data/simulation/structured_data.db/table/transactions_processed",
         "transformation": "Load valid transactions",
         "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T20:43:00.822492",
+        "source": "file://data/simulation/unstructured_data.xlsx/sheet/Raw_Transactions",
+        "target": "memory_dataframe",
+        "transformation": "pandas.read_excel",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T20:43:00.825391",
+        "source": "memory_dataframe",
+        "target": "memory_dataframe_clean",
+        "transformation": "Data Cleaning: Dropped 0 rows with missing IDs. Filled NaNs.",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T20:43:00.832713",
+        "source": "memory_dataframe_clean",
+        "target": "sqlite://data/simulation/structured_data.db/table/transactions_processed",
+        "transformation": "Load valid transactions",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:03:35.044554",
+        "source": "file://data/simulation/vendor_contracts.csv",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: Vendor Data",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:03:35.045068",
+        "source": "file://data/simulation/system_runtime.log",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: Runtime Logs",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:03:35.045299",
+        "source": "file://data/simulation/discovery_notes.txt",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: Discovery Notes",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:03:35.045489",
+        "source": "file://data/simulation/etl_pipeline_v1.py",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: PySpark Logic",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:03:35.182823",
+        "source": "file://data/simulation/unstructured_data.xlsx/sheet/Raw_Transactions",
+        "target": "memory_dataframe",
+        "transformation": "pandas.read_excel",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:03:35.183101",
+        "source": "memory_dataframe",
+        "target": "memory_dataframe_clean",
+        "transformation": "CLEANING_PENDING_APPROVAL: Found anomalous transaction amounts. Suggested Correction: Limit max amount to 10000.0",
+        "status": "PENDING_APPROVAL"
+    },
+    {
+        "timestamp": "2026-02-18T21:18:58.660500",
+        "source": "file://data/simulation/vendor_contracts.csv",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: Vendor Data",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:18:58.660939",
+        "source": "file://data/simulation/system_runtime.log",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: Runtime Logs",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:18:58.661125",
+        "source": "file://data/simulation/discovery_notes.txt",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: Discovery Notes",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:18:58.661286",
+        "source": "file://data/simulation/etl_pipeline_v1.py",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: PySpark Logic",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:18:58.789176",
+        "source": "file://data/simulation/unstructured_data.xlsx/sheet/Raw_Transactions",
+        "target": "memory_dataframe",
+        "transformation": "pandas.read_excel",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:18:58.789497",
+        "source": "memory_dataframe",
+        "target": "memory_dataframe_clean",
+        "transformation": "CLEANING_PENDING_APPROVAL: Found anomalous transaction amounts. Suggested Correction: Limit max amount to 10000.0",
+        "status": "PENDING_APPROVAL"
+    },
+    {
+        "timestamp": "2026-02-18T21:18:58.792254",
+        "source": "memory_dataframe",
+        "target": "memory_dataframe_clean",
+        "transformation": "Data Cleaning: Dropped 0 rows with missing IDs. Filled NaNs.",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:18:58.800198",
+        "source": "memory_dataframe_clean",
+        "target": "sqlite://data/simulation/structured_data.db/table/transactions_processed",
+        "transformation": "Load valid transactions",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:44:08.090505",
+        "source": "file://data/simulation/vendor_contracts.csv",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: Vendor Data",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:44:08.091933",
+        "source": "file://data/simulation/system_runtime.log",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: Runtime Logs",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:44:08.092206",
+        "source": "file://data/simulation/discovery_notes.txt",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: Discovery Notes",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:44:08.092455",
+        "source": "file://data/simulation/etl_pipeline_v1.py",
+        "target": "discovery_registry",
+        "transformation": "Registry Scan: PySpark Logic",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:44:08.182221",
+        "source": "file://data/simulation/unstructured_data.xlsx/sheet/Raw_Transactions",
+        "target": "memory_dataframe",
+        "transformation": "pandas.read_excel",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:44:08.182525",
+        "source": "memory_dataframe",
+        "target": "memory_dataframe_clean",
+        "transformation": "CLEANING_PENDING_APPROVAL: Found anomalous transaction amounts. Suggested Correction: Limit max amount to 10000.0",
+        "status": "PENDING_APPROVAL"
+    },
+    {
+        "timestamp": "2026-02-18T21:44:08.185340",
+        "source": "memory_dataframe",
+        "target": "memory_dataframe_clean",
+        "transformation": "Data Cleaning: Dropped 0 rows with missing IDs. Filled NaNs.",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T21:44:08.192534",
+        "source": "memory_dataframe_clean",
+        "target": "sqlite://data/simulation/structured_data.db/table/transactions_processed",
+        "transformation": "Load valid transactions",
+        "status": "SUCCESS"
     }
 ]

@@ -967,3 +967,60 @@ sequenceDiagram
     - See the agent query the database and read the budget files.
     - Review the generated report.
     - Click **"PUSH TO GOLD LAYER"** to finalize the audit.
+---
+
+## 10. Multi-Agent Lineage & Quality System (Feature Branch)
+
+This feature introduces a **Local Multi-Agent System** powered by **Ollama (Llama 3 / Phi-3)** and **LangGraph** to simulate, track, and visualize data lineage in a hybrid environment (Unstructured Excel -> Structured SQL).
+
+### 10.1. Architecture
+The system consists of 4 specialized agents orchestrated by a graph:
+1.  **Orchestrator**: Routes user queries to the correct specialist.
+2.  **StructureAgent**: Inspects Excel headers and SQLite schemas to understand data layout.
+3.  **LineageAgent**: Tracks data movement by analyzing ETL logs and querying the **Neo4j** graph.
+4.  **QualityAgent**: Detects anomalies (nulls, stale dates) injected by the "Chaos" simulator.
+
+### 10.2. Workflow
+```mermaid
+graph TD
+    User((User)) -->|Query| Orchestrator
+    Orchestrator -->|Routing| StructureAgent
+    Orchestrator -->|Routing| LineageAgent
+    Orchestrator -->|Routing| QualityAgent
+    
+    StructureAgent <-->|Inspect| FileSystem
+    LineageAgent <-->|Query| Neo4j[(Neo4j Graph)]
+    QualityAgent <-->|Scan| SQLite[(Structured DB)]
+```
+
+### 10.3. Setup & Execution
+1.  **Prerequisites**:
+    - Install **Ollama** and pull a model: `ollama pull llama3` or `ollama pull phi3`.
+    - (Optional) Install **Neo4j Desktop** for graph storage (System falls back to JSON logs if unavailable).
+
+2.  **Configuration**:
+    Ensure your `.env` file has:
+    ```ini
+    OLLAMA_BASE_URL=http://localhost:11434
+    OLLAMA_MODEL=llama3  # or phi3
+    NEO4J_URI=bolt://localhost:7687
+    NEO4J_USERNAME=neo4j
+    NEO4J_PASSWORD=your_password
+    ```
+
+3.  **Run the System**:
+    ```bash
+    # 1. Generate Data & Run ETL
+    python simulation/data_simulator.py
+    python etl/hybrid_etl.py
+    
+    # 2. Start the Agent Chat
+    python main.py
+    ```
+
+### 10.4. Verification
+- **Visual Graph**: A Mermaid diagram `lineage_graph.mmd` is automatically generated in the root directory.
+- **Chat Examples**:
+    - *"Analyze the structure of the excel file"*
+    - *"Trace the lineage of the transactions table"*
+    - *"Check for any stale data or quality issues"*
