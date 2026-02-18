@@ -1,0 +1,8 @@
+langchain
+langgraph
+neo4j
+pandas
+openpyxl
+faker
+matplotlib
+networkx

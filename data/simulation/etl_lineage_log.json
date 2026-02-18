@@ -1,0 +1,23 @@
+[
+    {
+        "timestamp": "2026-02-18T18:59:21.204549",
+        "source": "file://data/simulation/unstructured_data.xlsx/sheet/Raw_Transactions",
+        "target": "memory_dataframe",
+        "transformation": "pandas.read_excel",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T18:59:21.205615",
+        "source": "memory_dataframe",
+        "target": "memory_dataframe_clean",
+        "transformation": "Data Cleaning: Dropped 0 rows with missing IDs. Filled NaNs.",
+        "status": "SUCCESS"
+    },
+    {
+        "timestamp": "2026-02-18T18:59:21.210150",
+        "source": "memory_dataframe_clean",
+        "target": "sqlite://data/simulation/structured_data.db/table/transactions_processed",
+        "transformation": "Load valid transactions",
+        "status": "SUCCESS"
+    }
+]
