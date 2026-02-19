@@ -59,7 +59,14 @@ def get_etl_lineage_logs(log_path: str = "data/simulation/etl_lineage_log.json")
             if entry.get("status") == "PENDING_APPROVAL":
                 status_note = " [⚠️ ACTION REQUIRED: PENDING_APPROVAL]"
             
-            summary.append(f"{entry['timestamp']}: {entry['source']} -> {entry['target']} ({entry['transformation']}){status_note}")
+            # Clean up source/target for better visuals
+            source = entry['source'].replace("file://data/simulation/", "").replace("sqlite://data/simulation/", "DB: ").replace("/sheet/", " (Sheet: ").replace("/table/", " (Table: ").strip(")") + ")"
+            if source.endswith("))"): source = source[:-1]
+            
+            target = entry['target'].replace("file://data/simulation/", "").replace("sqlite://data/simulation/", "DB: ").replace("/sheet/", " (Sheet: ").replace("/table/", " (Table: ").strip(")") + ")"
+            if target.endswith("))"): target = target[:-1]
+
+            summary.append(f"{entry['timestamp']}: {source} -> {target} ({entry['transformation']}){status_note}")
             
         return "\n".join(summary)
     except Exception as e:

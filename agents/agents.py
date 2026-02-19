@@ -49,7 +49,7 @@ def orchestrator_node(state: AgentState):
     )
     
     # We can just ask the LLM to decide
-    response = llm.invoke([SystemMessage(content=system_prompt)] + messages)
+    response = llm.invoke([SystemMessage(content=system_prompt)] + state['messages'])
     decision = response.content.strip().lower()
     
     # Basic mapping/fallback

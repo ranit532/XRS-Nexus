@@ -1,4 +1,0 @@
-graph TD
-    file___data_simulation_unstructured_data_xlsx_sheet_Raw_Transactions["file://data/simulation/unstructured_data.xlsx/sheet/Raw_Transactions"] -- FLOWS_TO --> memory_dataframe["memory_dataframe"]
-    memory_dataframe["memory_dataframe"] -- FLOWS_TO --> memory_dataframe_clean["memory_dataframe_clean"]
-    memory_dataframe_clean["memory_dataframe_clean"] -- FLOWS_TO --> sqlite___data_simulation_structured_data_db_table_transactions_processed["sqlite://data/simulation/structured_data.db/table/transactions_processed"]

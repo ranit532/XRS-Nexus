@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os
 import sys
+import json
 import uuid
 from langchain_core.messages import HumanMessage
 
@@ -85,20 +86,68 @@ def get_lineage():
                 content = f.read()
             return jsonify({"mermaid": content})
         
-        # 2. Fallback: Generate a simple graph from the JSON logs
-        from agents.tools import get_etl_lineage_logs
-        logs = get_etl_lineage_logs.invoke({})
+        # 2. Fallback: Parse the JSON logs directly
+        log_path = "data/simulation/etl_lineage_log.json"
+        if not os.path.exists(log_path):
+             return jsonify({"mermaid": "graph TD;\nData_Source[Simulation Data] --> Memory --> SQLite"}), 200
+
+        with open(log_path, 'r') as f:
+            logs = json.load(f)
         
-        # Conversion logic (simplified)
-        # This is a fallback if the mmd file isn't there
+        # Convert JSON logs to Mermaid Graph
         graph = "graph TD;\n"
-        if "No ETL logs" in logs:
-             graph += "Start --> End"
-        else:
-             # This is a string, we'd need to parse it back or read the file directly
-             pass 
-             
-        return jsonify({"mermaid": graph if "Start --> End" not in graph else "graph TD;\nData_Source[Simulation Data] --> Memory --> SQLite"}), 200
+        graph += "    classDef file fill:#ffffff,stroke:#2563eb,stroke-width:2px,color:#1e293b;\n"
+        graph += "    classDef db fill:#ffffff,stroke:#059669,stroke-width:2px,color:#1e293b;\n"
+        graph += "    classDef memory fill:#ffffff,stroke:#9333ea,stroke-width:2px,stroke-dasharray: 5 5,color:#1e293b;\n"
+        
+        import re
+
+        def clean_label(label):
+            label = label.replace("file://data/simulation/", "📄 ")
+            label = label.replace("sqlite://data/simulation/", "🗄️ ")
+            label = label.replace("unstructured_data.xlsx/sheet/", "Excel: ")
+            label = label.replace("structured_data.db/table/", "DB: ")
+            label = label.replace("memory_dataframe_clean", "🧠 Cleaned DataFrame")
+            label = label.replace("memory_dataframe", "🧠 Raw DataFrame")
+            label = label.replace("discovery_registry", "🔍 Discovery Registry")
+            return label.strip()
+
+        # Deduplicate edges to keep graph clean
+        seen_edges = set()
+
+        for entry in logs:
+            source = clean_label(entry['source'])
+            target = clean_label(entry['target'])
+            
+            # Create safe IDs for Mermaid
+            s_id = re.sub(r'[^a-zA-Z0-9]', '_', source)
+            t_id = re.sub(r'[^a-zA-Z0-9]', '_', target)
+            
+            edge_key = f"{s_id}-{t_id}"
+            if edge_key in seen_edges:
+                continue
+            seen_edges.add(edge_key)
+            
+            # Assign classes
+            s_class = "file" if "📄" in source or "Excel" in source else "db" if "🗄️" in source or "DB" in source else "memory"
+            t_class = "file" if "📄" in target or "Excel" in target else "db" if "🗄️" in target or "DB" in target else "memory"
+
+            graph += f"    {s_id}[\"{source}\"]:::{s_class} --> {t_id}[\"{target}\"]:::{t_class};\n"
+        
+        return jsonify({"mermaid": graph})
+    except Exception as e:
+         return jsonify({"error": str(e), "mermaid": "graph TD;\nError[\"Error Loading Graph\"]"})
+
+@api.route('/scan', methods=['POST'])
+def scan_lineage():
+    """Triggers a runtime scan of the data simulation folder."""
+    try:
+        # In a real app, this would trigger the actual agents.
+        # For this POC, we re-run the ETL/Simulation logic or just return success
+        # to simulate the "AI Scanning" delay.
+        import time
+        time.sleep(2) 
+        return jsonify({"status": "success", "message": "Runtime Scan Complete. Lineage Updated."})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

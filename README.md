@@ -493,18 +493,21 @@ graph LR
 
 This section provides steps to simulate or execute the entire data lineage flow: **Synthetic Dataset -> ADLS -> ADF -> Azure Functions -> Ollama AI.**
 
-### 9.1. Real-Time Dashboard Visualization
-The "NEXUS AI Pipeline Monitor" provides a cutting-edge, glassmorphic UI to visualize the end-to-end journey.
+### 9.1. Interactive 3-Step Journey (React + Vite)
+The "NEXUS Synergy" Dashboard (`web/`) guides users through a structured intelligence workflow:
 
-#### To Run the Dashboard:
-1. **Start the Backend Bridge**:
-   ```bash
-   # Ensure dependencies are installed
-   pip install flask flask-cors azure-identity azure-mgmt-datafactory python-dotenv
-   # Start the bridge (Port 5001)
-   python3 dashboard_bridge.py
-   ```
-2. **Start the Frontend**:
+#### Step 1: Discovery
+Visual registry of all AI-detected data assets, including:
+- **Unstructured**: CSV, TXT, Logs.
+- **Complex**: Excel (with Macros), PySpark scripts.
+- **Structured**: SQL Tables.
+
+#### Step 2: Lineage & HITL
+- **Live Graph**: Real-time Mermaid.js visualization of data flow.
+- **HITL Gate**: A strict "Approve" mechanism where the AI pauses for human confirmation before applying lineage corrections.
+
+#### Step 3: Business Glossary
+- **Definitions**: AI-generated business context for technical metadata.
    ```bash
    cd dashboard
    npm install
@@ -795,6 +798,66 @@ This section details the 5 advanced Prompt Flow use cases implemented in the pro
 *   **`/synthetic-dataset`**: The "Fuel". Scripts to generate large-scale test data.
 *   **`/etl-execution`**: The "Muscle". Spark scripts that effectively transform the data.
 *   **`/fabric`**: The "Platform". Integration artifacts for Microsoft Fabric (Lakehouse, Pipelines, Notebooks).
+
+## 10. XRS Nexus Local Agentic Workflow (Ollama + LangGraph + Neo4j)
+
+This section details the **Local Agentified Workflow** designed for the "Nexus Synergy" experience. It leverages **Ollama** (Phi-3) for local inference, **LangGraph** for multi-agent orchestration, and **Neo4j** for graph knowledge.
+
+### 10.1. The 3-Step Discovery Journey
+
+The workflow is visualized in the **XRS Nexus UI** (`http://localhost:5173`) through a cutting-edge, interactive 3-step wizard:
+
+#### Step 1: Data Discovery (Multi-Modal Ingestion)
+The system scans the `data/simulation` directory and identifies diverse enterprise assets:
+- **Structured**: `vendor_contracts.csv`, `structured_data.db` (SQLite)
+- **Semi-Structured**: `unstructured_data.xlsx` (including Macros)
+- **Unstructured**: `system_runtime.log`, `discovery_notes.txt`
+- **Code**: `etl_pipeline_v1.py` (PySpark scripts)
+
+The **Structure Agent** uses `pandas` and `sqlite3` tools to automatically inspect headers, schemas, and file intent.
+
+#### Step 2: AI Data Lineage Journey & HITL
+- **Runtime Analysis**: The **Lineage Agent** reads the ETL execution logs (`etl_lineage_log.json`) and constructs a dynamic lineage graph.
+- **Visual Graph**: A "stunning" interactive graph (White/Dark theme) plotted using Mermaid.js and backed by **Neo4j** logic.
+- **Human-in-the-Loop (HITL)**:
+    - The **Quality Agent** monitors data flow for anomalies (e.g., Pending Approvals, Null Spikes).
+    - If an issue is found (e.g., "Quality Issue detected in Raw_Transactions"), the system pauses and requests **Human Intervention**.
+    - The user clicks **"Approve"** in the UI to authorize the AI's suggested correction, updating the lineage application-side.
+
+#### Step 3: Business Glossary
+- The **Glossary Agent** provides real-time definitions for business terms found in the data (e.g., "What is `customer_id`?").
+- It bridges the gap between technical metadata and business context.
+
+### 10.2. Technical Architecture
+
+| Component | Technology | Role |
+| :--- | :--- | :--- |
+| **LLM Inference** | **Ollama** (Phi-3) | Local, private, zero-cost intelligence. |
+| **Orchestrator** | **LangGraph** | Manages state and routes tasks between specialized agents. |
+| **Graph DB** | **Neo4j / NetworkX** | Stores relationships (`CSV` -> `DataFrame` -> `Table`). |
+| **Backend** | **Flask** | Exposes the agent swarm via `http://localhost:5001`. |
+| **Frontend** | **React + Vite** | Provides the modern "Nexus Synergy" UI. |
+
+### 10.3. How to Run the Agentic Workflow
+
+1.  **Start Ollama**:
+    ```bash
+    ollama serve
+    ollama run phi3
+    ```
+
+2.  **Start the Backend (Agents)**:
+    ```bash
+    source .venv/bin/activate
+    python api.py
+    ```
+
+3.  **Start the Frontend (UI)**:
+    ```bash
+    cd web
+    npm run dev
+    ```
+4.  **Experience**: Open `http://localhost:5173` and follow the on-screen wizard!
 
 ---
 
