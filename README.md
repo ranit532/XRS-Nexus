@@ -1039,9 +1039,9 @@ This feature introduces a **Local Multi-Agent System** powered by **Ollama (Llam
 ### 10.1. Architecture
 The system consists of 4 specialized agents orchestrated by a graph:
 1.  **Orchestrator**: Routes user queries to the correct specialist.
-2.  **StructureAgent**: Inspects Excel headers and SQLite schemas to understand data layout.
-3.  **LineageAgent**: Tracks data movement by analyzing ETL logs and querying the **Neo4j** graph.
-4.  **QualityAgent**: Detects anomalies (nulls, stale dates) injected by the "Chaos" simulator.
+2.  **Structure Agent**: Analyzes dataset structure (columns, macros, links).
+3.  **Lineage Agent**: Tracks data movement by analyzing ETL logs and querying the **Neo4j** graph.
+4.  **Quality Agent**: Detects anomalies (nulls, stale dates) injected by the "Chaos" simulator.
 
 ### 10.2. Workflow
 ```mermaid
