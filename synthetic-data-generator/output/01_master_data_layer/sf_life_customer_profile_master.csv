@@ -1,0 +1,31 @@
+life_customer_identifier,customer_full_name,date_of_birth,customer_address,customer_email_address,customer_phone_number,customer_kyc_status,customer_risk_profile,policyholder_relationship_type,retirement_income_preference
+LIFE_CUST_001,Allison Hill,1960-05-24,"819 Johnson Course, East William, AK 74064",jennifermiles@example.com,7940265423,FAILED,HUSBAND,BILL,HER
+LIFE_CUST_002,Lindsey Roman,1994-11-12,"1849 Ray Squares, North Donnaport, CO 31013",jamesshawn@example.com,5534192832,PENDING,WISH,PUSH,RISE
+LIFE_CUST_003,Melinda Cameron,1998-01-05,"6413 Lewis Parks, Wilkersonmouth, FL 35219",johnhoffman@example.com,9653287101,VERIFIED,PICK,ATTACK,IMAGE
+LIFE_CUST_004,iZachary Rice,1900-00-00,"184 Rodriguez Mews, South Aaron, VA 94830",teresa28@example.org,8932528809,INVALID_STATUS,BROTHER,WOMAN,HIM
+LIFE_CUST_005,Sandra Parker,1949-02-23,"71822 Arroyo Expressway, Allisonchester, IL 71187",jenniferross.example.net,7871331509,FAILED,DISCUSSION,ACCOUNT,AVOID
+LIFE_CUST_006,Amy Jones,1947-05-06,"347 Amber Stream, Sanchezfort, AS 53855",clintonhopkins@example.com,6701065133,PENDING,CHALLENGE,KNOWLEDGE,COVER
+LIFE_CUST_007,David Leblanc,1975-05-13,"80132 Tucker Forest, Barreraburgh, MS 00783",ybaker@example.com,6872343098,PENDING,APPLY,PATTERN,ME
+LIFE_CUST_008,Sarah Moore,1979-10-07,"91361 Beth Canyon, South Dianeshire, NC 41968",james53@example.com,2475107991,PENDING,MOVE,EVIDENCE,CAUSE
+LIFE_CUST_009,Shirley Suarez,1970-05-09,"498 Elizabeth Plaza Suite 124, North Juliaberg, KY 37431",jenniferharris@example.net,8740164005,VERIFIED,SITE,LETTER,OK
+LIFE_CUST_010,Kristina Rodriguez,2005-04-20,"059 Russell Canyon, Michaelton, MH 47399",evelynestrada@example.com,9232260256,VERIFIED,STORE,SCIENCE,BOX
+LIFE_CUST_011,Andrew Ruiz,1958-10-15,"4330 Raymond Harbors Apt. 458, Frazierside, MA 04118",wileyjose@example.net,0196556981,PENDING,ENVIRONMENTAL,ANOTHER,SECTION
+LIFE_CUST_012,iJoseph Drake,2025-13-40,"6159 Alvarado Crossing, Williamchester, MD 53244",angela36@example.net,2994680443,UNKNOWN_X,REAL,FUND,MAKE
+LIFE_CUST_013,iMichael Dixon,1900-00-00,"PSC 2148, Box 9513, APO AP 41188",lindsayhernandez@example.org,7917693676,INVALID_STATUS,WALK,SOCIAL,TRADITIONAL
+LIFE_CUST_014,Ashley Coleman,1957-03-05,"83172 Contreras Points Suite 798, Rivasside, NV 21362",wcole.example.org,8734714345,PENDING,CERTAINLY,CITY,DURING
+LIFE_CUST_015,Christian Lewis,1973-06-09,"0366 Melissa Track Suite 705, Karenchester, ND 98479",tracynelson@example.com,6562729806,VERIFIED,BECAUSE,QUESTION,LATER
+LIFE_CUST_016,iJoel Williams,1900-00-00,"5646 Conley Mountains Apt. 805, Lake Casey, SD 05777",herringjames@example.org,3271937452,INVALID_STATUS,STAR,TELL,COMMON
+LIFE_CUST_017,Ashley Johnson,1966-06-08,"3193 Heidi Hollow Apt. 905, Stanleyland, NY 85375",alexander67@example.org,5726284987,PENDING,EXECUTIVE,FUTURE,TOGETHER
+LIFE_CUST_018,Timothy Ramirez,1975-11-19,"965 Troy Islands Apt. 735, Matthewview, OH 01831",christophercortez@example.com,7770143634,FAILED,ON,NICE,GUY
+LIFE_CUST_019,Patrick Rivera,1993-01-13,"3135 Julia Track Apt. 337, Jennyhaven, PA 37594",wallkenneth@example.com,4082400842,PENDING,PAINTING,FEEL,MANAGER
+LIFE_CUST_020,Glen Sheppard,1962-05-22,"USCGC Wilson, FPO AE 53022",ojones@example.net,2294131869,VERIFIED,STAND,NECESSARY,HUSBAND
+LIFE_CUST_021,Jeremy Dalton,1974-05-22,"133 Guerrero Estate, East Andrea, GA 00851",mhayes@example.com,0344713493,FAILED,DOWN,RAISE,CHURCH
+LIFE_CUST_022,iSamantha Jones,1900-00-00,"1746 Mason Park Suite 190, Navarroview, AK 12471",suzannehuff@example.net,4902787429,UNKNOWN_X,MANY,HAPPEN,ISSUE
+LIFE_CUST_023,Michael Hodge,1967-08-26,"6807 Leonard Islands Apt. 680, Gutierrezborough, NC 47920",wgarrett@example.org,4824771093,FAILED,ADDRESS,OLD,INVOLVE
+LIFE_CUST_024,Willie Durham,1976-08-10,"USNS Jimenez, FPO AP 38755",robert77.example.org,8263982146,VERIFIED,TEND,ABLE,FEAR
+LIFE_CUST_025,Sara Carpenter,1990-02-11,"8755 Gibson Islands, Lake John, MS 31114",vwilliams@example.com,6270289517,PENDING,ADMINISTRATION,SEVEN,CHARGE
+LIFE_CUST_026,Matthew Moore,1977-02-26,"9615 Finley Road Suite 809, East Crystalport, IN 98381",hamiltoncorey@example.net,7240050455,VERIFIED,NICE,ITS,OTHERS
+LIFE_CUST_027,Catherine Thompson,1986-09-07,"9237 Stevens Shores, Port Stevenport, TX 72144",charleslandry.example.net,6474367136,FAILED,FIND,SCENE,FIND
+LIFE_CUST_028,Ronald Foster,1945-10-04,"743 Robinson Field, Ericaberg, SC 13236",parkerscott@example.net,2145623285,PENDING,THEN,COMMUNITY,EVEN
+LIFE_CUST_029,Terry Coffey,1965-04-16,"71236 Davis Locks Apt. 481, Richardsonview, OR 50442",daniel37@example.org,9317461200,FAILED,BILL,EASY,VERY
+LIFE_CUST_030,Jasmine Watson,1995-10-11,"261 Gilbert Harbors Apt. 537, Sampsonstad, CT 90374",amy50@example.com,3171390053,FAILED,AUTHORITY,THEMSELVES,SOUTHERN

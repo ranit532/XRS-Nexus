@@ -1,0 +1,839 @@
+{
+  "dataset_name": "salesforce_sample_layers_semantic_relational",
+  "purpose": "Salesforce sample dataset with explicit cross-layer business keys while preserving layer, line-of-business, and business-domain semantics.",
+  "random_seed": 42,
+  "row_count_configuration": {
+    "Master Data Layer": 30,
+    "Configuration / Control Data": 20,
+    "Transactional / Application Data Layer": 50,
+    "Analytical / Reporting Layer": 25
+  },
+  "entities": [
+    {
+      "entity_name": "sf_life_customer_profile_master",
+      "total_rows": 30,
+      "valid_rows": 21,
+      "borderline_rows": 4,
+      "invalid_rows": 5,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_email_format",
+        "invalid_status_value",
+        "malformed_date"
+      ],
+      "business_keys_tested": [
+        "life_customer_identifier"
+      ],
+      "foreign_keys_tested": [],
+      "semantic_domain_tests": [
+        "contact_channel_quality",
+        "invalid_enumeration",
+        "semantic_corruption",
+        "temporal_anomaly"
+      ],
+      "lineage_tests": []
+    },
+    {
+      "entity_name": "sf_life_beneficiary_party_master",
+      "total_rows": 30,
+      "valid_rows": 21,
+      "borderline_rows": 4,
+      "invalid_rows": 5,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "invalid_status_value",
+        "percentage_over_100"
+      ],
+      "business_keys_tested": [
+        "beneficiary_party_identifier"
+      ],
+      "foreign_keys_tested": [],
+      "semantic_domain_tests": [
+        "invalid_enumeration",
+        "range_violation",
+        "semantic_corruption"
+      ],
+      "lineage_tests": []
+    },
+    {
+      "entity_name": "sf_life_policy_contract_master",
+      "total_rows": 30,
+      "valid_rows": 21,
+      "borderline_rows": 4,
+      "invalid_rows": 5,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "broken_foreign_key_i_prefixed",
+        "invalid_status_value",
+        "malformed_date",
+        "negative_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "life_policy_number"
+      ],
+      "foreign_keys_tested": [
+        "annuity_product_code",
+        "beneficiary_party_identifier",
+        "life_customer_identifier"
+      ],
+      "semantic_domain_tests": [
+        "invalid_enumeration",
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption",
+        "temporal_anomaly"
+      ],
+      "lineage_tests": [
+        "orphan_reference"
+      ]
+    },
+    {
+      "entity_name": "sf_health_member_profile_master",
+      "total_rows": 30,
+      "valid_rows": 21,
+      "borderline_rows": 4,
+      "invalid_rows": 5,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_email_format",
+        "invalid_status_value",
+        "malformed_date"
+      ],
+      "business_keys_tested": [
+        "insured_member_identifier"
+      ],
+      "foreign_keys_tested": [],
+      "semantic_domain_tests": [
+        "contact_channel_quality",
+        "invalid_enumeration",
+        "semantic_corruption",
+        "temporal_anomaly"
+      ],
+      "lineage_tests": []
+    },
+    {
+      "entity_name": "sf_health_provider_party_master",
+      "total_rows": 30,
+      "valid_rows": 21,
+      "borderline_rows": 4,
+      "invalid_rows": 5,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption"
+      ],
+      "business_keys_tested": [
+        "provider_party_identifier"
+      ],
+      "foreign_keys_tested": [],
+      "semantic_domain_tests": [
+        "semantic_corruption"
+      ],
+      "lineage_tests": []
+    },
+    {
+      "entity_name": "sf_health_policy_contract_master",
+      "total_rows": 30,
+      "valid_rows": 21,
+      "borderline_rows": 4,
+      "invalid_rows": 5,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "broken_foreign_key_i_prefixed",
+        "invalid_status_value",
+        "malformed_date"
+      ],
+      "business_keys_tested": [
+        "health_policy_number"
+      ],
+      "foreign_keys_tested": [
+        "health_coverage_identifier",
+        "health_product_code",
+        "insured_member_identifier",
+        "preferred_provider_party_identifier"
+      ],
+      "semantic_domain_tests": [
+        "invalid_enumeration",
+        "semantic_corruption",
+        "temporal_anomaly"
+      ],
+      "lineage_tests": [
+        "orphan_reference"
+      ]
+    },
+    {
+      "entity_name": "sf_general_broker_distribution_master",
+      "total_rows": 30,
+      "valid_rows": 21,
+      "borderline_rows": 4,
+      "invalid_rows": 5,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "percentage_over_100"
+      ],
+      "business_keys_tested": [
+        "broker_partner_identifier"
+      ],
+      "foreign_keys_tested": [],
+      "semantic_domain_tests": [
+        "range_violation",
+        "semantic_corruption"
+      ],
+      "lineage_tests": []
+    },
+    {
+      "entity_name": "sf_general_policy_contract_master",
+      "total_rows": 30,
+      "valid_rows": 21,
+      "borderline_rows": 4,
+      "invalid_rows": 5,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "broken_foreign_key_i_prefixed",
+        "invalid_status_value",
+        "malformed_date",
+        "negative_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "general_policy_number"
+      ],
+      "foreign_keys_tested": [
+        "broker_partner_identifier",
+        "general_product_code",
+        "underwriting_rule_identifier"
+      ],
+      "semantic_domain_tests": [
+        "invalid_enumeration",
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption",
+        "temporal_anomaly"
+      ],
+      "lineage_tests": [
+        "orphan_reference"
+      ]
+    },
+    {
+      "entity_name": "sf_life_beneficiary_payout_claim_transaction",
+      "total_rows": 50,
+      "valid_rows": 35,
+      "borderline_rows": 8,
+      "invalid_rows": 7,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "broken_foreign_key_i_prefixed",
+        "duplicate_business_key",
+        "invalid_status_value",
+        "malformed_date",
+        "negative_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "life_claim_number"
+      ],
+      "foreign_keys_tested": [
+        "beneficiary_party_identifier",
+        "related_life_policy_number"
+      ],
+      "semantic_domain_tests": [
+        "invalid_enumeration",
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption",
+        "temporal_anomaly"
+      ],
+      "lineage_tests": [
+        "duplicate_identifier_conflict",
+        "orphan_reference"
+      ]
+    },
+    {
+      "entity_name": "sf_life_premium_invoice_collection_transaction",
+      "total_rows": 50,
+      "valid_rows": 35,
+      "borderline_rows": 8,
+      "invalid_rows": 7,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "broken_foreign_key_i_prefixed",
+        "duplicate_business_key",
+        "invalid_status_value",
+        "malformed_date",
+        "negative_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "premium_invoice_number"
+      ],
+      "foreign_keys_tested": [
+        "life_customer_identifier",
+        "life_policy_number"
+      ],
+      "semantic_domain_tests": [
+        "invalid_enumeration",
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption",
+        "temporal_anomaly"
+      ],
+      "lineage_tests": [
+        "duplicate_identifier_conflict",
+        "orphan_reference"
+      ]
+    },
+    {
+      "entity_name": "sf_health_hospital_claim_transaction",
+      "total_rows": 50,
+      "valid_rows": 35,
+      "borderline_rows": 8,
+      "invalid_rows": 7,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "broken_foreign_key_i_prefixed",
+        "duplicate_business_key",
+        "malformed_date",
+        "negative_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "health_claim_number"
+      ],
+      "foreign_keys_tested": [
+        "health_policy_number",
+        "insured_member_identifier",
+        "provider_party_identifier"
+      ],
+      "semantic_domain_tests": [
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption",
+        "temporal_anomaly"
+      ],
+      "lineage_tests": [
+        "duplicate_identifier_conflict",
+        "orphan_reference"
+      ]
+    },
+    {
+      "entity_name": "sf_general_motor_loss_claim_transaction",
+      "total_rows": 50,
+      "valid_rows": 35,
+      "borderline_rows": 8,
+      "invalid_rows": 7,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "broken_foreign_key_i_prefixed",
+        "duplicate_business_key",
+        "malformed_date",
+        "negative_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "general_claim_number"
+      ],
+      "foreign_keys_tested": [
+        "general_policy_number",
+        "underwriting_rule_identifier"
+      ],
+      "semantic_domain_tests": [
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption",
+        "temporal_anomaly"
+      ],
+      "lineage_tests": [
+        "duplicate_identifier_conflict",
+        "orphan_reference"
+      ]
+    },
+    {
+      "entity_name": "sf_life_annuity_product_configuration",
+      "total_rows": 20,
+      "valid_rows": 14,
+      "borderline_rows": 3,
+      "invalid_rows": 3,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "annuity_product_code"
+      ],
+      "foreign_keys_tested": [],
+      "semantic_domain_tests": [
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption"
+      ],
+      "lineage_tests": []
+    },
+    {
+      "entity_name": "sf_health_plan_product_configuration",
+      "total_rows": 20,
+      "valid_rows": 14,
+      "borderline_rows": 3,
+      "invalid_rows": 3,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "negative_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "health_product_code"
+      ],
+      "foreign_keys_tested": [],
+      "semantic_domain_tests": [
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption"
+      ],
+      "lineage_tests": []
+    },
+    {
+      "entity_name": "sf_health_benefit_coverage_configuration",
+      "total_rows": 20,
+      "valid_rows": 14,
+      "borderline_rows": 3,
+      "invalid_rows": 3,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "health_coverage_identifier"
+      ],
+      "foreign_keys_tested": [],
+      "semantic_domain_tests": [
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption"
+      ],
+      "lineage_tests": []
+    },
+    {
+      "entity_name": "sf_general_motor_product_configuration",
+      "total_rows": 20,
+      "valid_rows": 14,
+      "borderline_rows": 3,
+      "invalid_rows": 3,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "negative_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "general_product_code"
+      ],
+      "foreign_keys_tested": [],
+      "semantic_domain_tests": [
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption"
+      ],
+      "lineage_tests": []
+    },
+    {
+      "entity_name": "sf_general_underwriting_risk_configuration",
+      "total_rows": 20,
+      "valid_rows": 14,
+      "borderline_rows": 3,
+      "invalid_rows": 3,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "invalid_status_value"
+      ],
+      "business_keys_tested": [
+        "underwriting_rule_identifier"
+      ],
+      "foreign_keys_tested": [],
+      "semantic_domain_tests": [
+        "invalid_enumeration",
+        "semantic_corruption"
+      ],
+      "lineage_tests": []
+    },
+    {
+      "entity_name": "sf_general_accounting_posting_control_configuration",
+      "total_rows": 20,
+      "valid_rows": 14,
+      "borderline_rows": 3,
+      "invalid_rows": 3,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "malformed_date",
+        "negative_amount"
+      ],
+      "business_keys_tested": [
+        "ledger_account_code"
+      ],
+      "foreign_keys_tested": [],
+      "semantic_domain_tests": [
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption",
+        "temporal_anomaly"
+      ],
+      "lineage_tests": []
+    },
+    {
+      "entity_name": "sf_life_policy_maturity_reporting",
+      "total_rows": 25,
+      "valid_rows": 18,
+      "borderline_rows": 4,
+      "invalid_rows": 3,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "broken_foreign_key_i_prefixed",
+        "duplicate_business_key",
+        "negative_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "reporting_month",
+        "annuity_product_code"
+      ],
+      "foreign_keys_tested": [
+        "annuity_product_code"
+      ],
+      "semantic_domain_tests": [
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption"
+      ],
+      "lineage_tests": [
+        "duplicate_identifier_conflict",
+        "orphan_reference"
+      ]
+    },
+    {
+      "entity_name": "sf_health_claim_authorization_reporting",
+      "total_rows": 25,
+      "valid_rows": 18,
+      "borderline_rows": 4,
+      "invalid_rows": 3,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "broken_foreign_key_i_prefixed",
+        "duplicate_business_key",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "reporting_month",
+        "health_product_code",
+        "provider_party_identifier"
+      ],
+      "foreign_keys_tested": [
+        "health_product_code",
+        "provider_party_identifier"
+      ],
+      "semantic_domain_tests": [
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption"
+      ],
+      "lineage_tests": [
+        "duplicate_identifier_conflict",
+        "orphan_reference"
+      ]
+    },
+    {
+      "entity_name": "sf_general_broker_profitability_reporting",
+      "total_rows": 25,
+      "valid_rows": 18,
+      "borderline_rows": 4,
+      "invalid_rows": 3,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "broken_foreign_key_i_prefixed",
+        "duplicate_business_key",
+        "negative_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "reporting_month",
+        "broker_partner_identifier",
+        "general_product_code"
+      ],
+      "foreign_keys_tested": [
+        "broker_partner_identifier",
+        "general_product_code"
+      ],
+      "semantic_domain_tests": [
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption"
+      ],
+      "lineage_tests": [
+        "duplicate_identifier_conflict",
+        "orphan_reference"
+      ]
+    },
+    {
+      "entity_name": "sf_general_claim_reserve_reporting",
+      "total_rows": 25,
+      "valid_rows": 18,
+      "borderline_rows": 4,
+      "invalid_rows": 3,
+      "injected_issue_types": [
+        "attribute_i_prefix_corruption",
+        "borderline_outlier_amount",
+        "broken_foreign_key_i_prefixed",
+        "duplicate_business_key",
+        "negative_amount",
+        "string_in_numeric_field"
+      ],
+      "business_keys_tested": [
+        "reporting_month",
+        "ledger_account_code",
+        "underwriting_rule_identifier",
+        "general_product_code"
+      ],
+      "foreign_keys_tested": [
+        "general_product_code",
+        "ledger_account_code",
+        "underwriting_rule_identifier"
+      ],
+      "semantic_domain_tests": [
+        "numeric_outlier",
+        "numeric_quality",
+        "semantic_corruption"
+      ],
+      "lineage_tests": [
+        "duplicate_identifier_conflict",
+        "orphan_reference"
+      ]
+    }
+  ],
+  "relationship_checks": [
+    {
+      "from_entity": "sf_life_policy_contract_master",
+      "to_entity": "sf_life_customer_profile_master",
+      "from_key": "life_customer_identifier",
+      "to_key": "life_customer_identifier",
+      "valid_rows_checked": 21,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_life_policy_contract_master",
+      "to_entity": "sf_life_beneficiary_party_master",
+      "from_key": "beneficiary_party_identifier",
+      "to_key": "beneficiary_party_identifier",
+      "valid_rows_checked": 21,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_life_policy_contract_master",
+      "to_entity": "sf_life_annuity_product_configuration",
+      "from_key": "annuity_product_code",
+      "to_key": "annuity_product_code",
+      "valid_rows_checked": 21,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_life_beneficiary_payout_claim_transaction",
+      "to_entity": "sf_life_policy_contract_master",
+      "from_key": "related_life_policy_number",
+      "to_key": "life_policy_number",
+      "valid_rows_checked": 35,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_life_beneficiary_payout_claim_transaction",
+      "to_entity": "sf_life_beneficiary_party_master",
+      "from_key": "beneficiary_party_identifier",
+      "to_key": "beneficiary_party_identifier",
+      "valid_rows_checked": 35,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_life_premium_invoice_collection_transaction",
+      "to_entity": "sf_life_policy_contract_master",
+      "from_key": "life_policy_number",
+      "to_key": "life_policy_number",
+      "valid_rows_checked": 35,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_life_premium_invoice_collection_transaction",
+      "to_entity": "sf_life_customer_profile_master",
+      "from_key": "life_customer_identifier",
+      "to_key": "life_customer_identifier",
+      "valid_rows_checked": 35,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_life_policy_maturity_reporting",
+      "to_entity": "sf_life_annuity_product_configuration",
+      "from_key": "annuity_product_code",
+      "to_key": "annuity_product_code",
+      "valid_rows_checked": 18,
+      "missing_parents": 4
+    },
+    {
+      "from_entity": "sf_health_policy_contract_master",
+      "to_entity": "sf_health_member_profile_master",
+      "from_key": "insured_member_identifier",
+      "to_key": "insured_member_identifier",
+      "valid_rows_checked": 21,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_health_policy_contract_master",
+      "to_entity": "sf_health_provider_party_master",
+      "from_key": "preferred_provider_party_identifier",
+      "to_key": "provider_party_identifier",
+      "valid_rows_checked": 21,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_health_policy_contract_master",
+      "to_entity": "sf_health_plan_product_configuration",
+      "from_key": "health_product_code",
+      "to_key": "health_product_code",
+      "valid_rows_checked": 21,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_health_policy_contract_master",
+      "to_entity": "sf_health_benefit_coverage_configuration",
+      "from_key": "health_coverage_identifier",
+      "to_key": "health_coverage_identifier",
+      "valid_rows_checked": 21,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_health_hospital_claim_transaction",
+      "to_entity": "sf_health_policy_contract_master",
+      "from_key": "health_policy_number",
+      "to_key": "health_policy_number",
+      "valid_rows_checked": 35,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_health_hospital_claim_transaction",
+      "to_entity": "sf_health_member_profile_master",
+      "from_key": "insured_member_identifier",
+      "to_key": "insured_member_identifier",
+      "valid_rows_checked": 35,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_health_hospital_claim_transaction",
+      "to_entity": "sf_health_provider_party_master",
+      "from_key": "provider_party_identifier",
+      "to_key": "provider_party_identifier",
+      "valid_rows_checked": 35,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_health_claim_authorization_reporting",
+      "to_entity": "sf_health_plan_product_configuration",
+      "from_key": "health_product_code",
+      "to_key": "health_product_code",
+      "valid_rows_checked": 18,
+      "missing_parents": 4
+    },
+    {
+      "from_entity": "sf_health_claim_authorization_reporting",
+      "to_entity": "sf_health_provider_party_master",
+      "from_key": "provider_party_identifier",
+      "to_key": "provider_party_identifier",
+      "valid_rows_checked": 18,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_general_policy_contract_master",
+      "to_entity": "sf_general_broker_distribution_master",
+      "from_key": "broker_partner_identifier",
+      "to_key": "broker_partner_identifier",
+      "valid_rows_checked": 21,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_general_policy_contract_master",
+      "to_entity": "sf_general_motor_product_configuration",
+      "from_key": "general_product_code",
+      "to_key": "general_product_code",
+      "valid_rows_checked": 21,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_general_policy_contract_master",
+      "to_entity": "sf_general_underwriting_risk_configuration",
+      "from_key": "underwriting_rule_identifier",
+      "to_key": "underwriting_rule_identifier",
+      "valid_rows_checked": 21,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_general_motor_loss_claim_transaction",
+      "to_entity": "sf_general_policy_contract_master",
+      "from_key": "general_policy_number",
+      "to_key": "general_policy_number",
+      "valid_rows_checked": 35,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_general_motor_loss_claim_transaction",
+      "to_entity": "sf_general_underwriting_risk_configuration",
+      "from_key": "underwriting_rule_identifier",
+      "to_key": "underwriting_rule_identifier",
+      "valid_rows_checked": 35,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_general_broker_profitability_reporting",
+      "to_entity": "sf_general_broker_distribution_master",
+      "from_key": "broker_partner_identifier",
+      "to_key": "broker_partner_identifier",
+      "valid_rows_checked": 18,
+      "missing_parents": 0
+    },
+    {
+      "from_entity": "sf_general_broker_profitability_reporting",
+      "to_entity": "sf_general_motor_product_configuration",
+      "from_key": "general_product_code",
+      "to_key": "general_product_code",
+      "valid_rows_checked": 18,
+      "missing_parents": 4
+    },
+    {
+      "from_entity": "sf_general_claim_reserve_reporting",
+      "to_entity": "sf_general_accounting_posting_control_configuration",
+      "from_key": "ledger_account_code",
+      "to_key": "ledger_account_code",
+      "valid_rows_checked": 18,
+      "missing_parents": 5
+    },
+    {
+      "from_entity": "sf_general_claim_reserve_reporting",
+      "to_entity": "sf_general_underwriting_risk_configuration",
+      "from_key": "underwriting_rule_identifier",
+      "to_key": "underwriting_rule_identifier",
+      "valid_rows_checked": 18,
+      "missing_parents": 5
+    },
+    {
+      "from_entity": "sf_general_claim_reserve_reporting",
+      "to_entity": "sf_general_motor_product_configuration",
+      "from_key": "general_product_code",
+      "to_key": "general_product_code",
+      "valid_rows_checked": 18,
+      "missing_parents": 5
+    }
+  ]
+}

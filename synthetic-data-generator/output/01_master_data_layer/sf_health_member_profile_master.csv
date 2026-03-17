@@ -1,0 +1,31 @@
+insured_member_identifier,insured_member_name,date_of_birth,member_address,member_email_address,member_phone_number,member_kyc_status,member_risk_profile,family_floater_indicator,pre_existing_disease_disclosure
+HLTH_MEM_001,Ernest Ramirez,1952-12-04,"8681 Hampton Squares, Lewisport, UT 64883",davidfarrell@example.com,7155188442,VERIFIED,DOOR,CAMPAIGN,DEEP
+HLTH_MEM_002,Cynthia Snyder,1969-10-07,"8291 Kyle Stravenue Suite 866, East Teresaland, NV 61558",david89.example.org,6801824225,FAILED,WANT,FEDERAL,THROUGHOUT
+HLTH_MEM_003,Craig Huber,1963-11-19,"818 Brittany Prairie Apt. 299, Meganshire, AZ 04219",williamsdarlene@example.net,3969078447,PENDING,LONG,BABY,RISK
+HLTH_MEM_004,iJeffrey Washington,1900-00-00,"5562 Robertson Coves, Johnville, KY 59430",donaldwilliams@example.com,3259532787,UNKNOWN_X,AGENCY,BELIEVE,YOU
+HLTH_MEM_005,Jim Allen,1984-11-26,"7974 Melanie Meadows, West Jessica, WV 53356",brandon09@example.net,5841687849,VERIFIED,BILL,INDEED,HOUR
+HLTH_MEM_006,Gina Mcmillan,1996-07-31,"000 Jennifer Unions Suite 872, West Sarah, MD 21800",vewing@example.com,8887947055,PENDING,FOOT,STYLE,WAY
+HLTH_MEM_007,Melissa Johnson,1977-07-03,"097 Alexandria Stravenue, Hernandezbury, AZ 75548",leescott@example.com,6368970283,FAILED,NEVER,HOWEVER,FORMER
+HLTH_MEM_008,Julia Patel,1982-05-19,"733 Grant Fork Suite 437, Timothyside, WY 95090",keith98@example.com,5240415747,FAILED,EXPERIENCE,WORKER,OR
+HLTH_MEM_009,Breanna Gilbert,1985-02-20,"833 Craig Isle, Garciaberg, AL 72636",richarddonovan@example.com,3454019380,PENDING,WORLD,WIDE,ALTHOUGH
+HLTH_MEM_010,iJennifer Simpson DVM,2025-13-40,"PSC 0049, Box 9154, APO AA 84559",ismall@example.net,4315274205,INVALID_STATUS,CONTINUE,POPULAR,TOTAL
+HLTH_MEM_011,Jennifer Patterson,1967-07-10,"27530 Reyes Mission, Stephanieport, OR 95250",greenmichael.example.org,1742684145,FAILED,CELL,MEAN,CLAIM
+HLTH_MEM_012,William Brooks,1992-12-21,"339 Alicia Pines Suite 191, Port Amyhaven, ID 75566",franklinbond.example.com,3971870728,FAILED,ARTICLE,OPERATION,MAINTAIN
+HLTH_MEM_013,Elizabeth Johnson,1962-07-10,"106 Graves Plains, North Valeriefort, AZ 38130",iwhite@example.net,5676618251,FAILED,NEWSPAPER,CARE,SHOULD
+HLTH_MEM_014,Sandy Avila,1965-07-05,"633 Reed Harbor Apt. 106, East Jamieville, PA 04901",tharper.example.org,0673830284,VERIFIED,PARTICIPANT,PIECE,SPRING
+HLTH_MEM_015,Erica Turner,1954-12-15,"Unit 8364 Box 4089, DPO AP 23456",dpeters@example.com,8566246287,FAILED,TOWARD,SECOND,CHARGE
+HLTH_MEM_016,Suzanne Hart,1973-07-20,"3435 Sandra Vista, Christopherborough, AR 35688",mnunez@example.org,3983735403,PENDING,WHO,EIGHT,SAFE
+HLTH_MEM_017,iChristine Herman,1900-00-00,"7854 Ward Parks Suite 175, West Lawrence, AZ 74232",joycesmith@example.net,4235369378,INVALID_STATUS,SEVERAL,QUALITY,SISTER
+HLTH_MEM_018,Christopher Norton Jr.,1994-03-23,"080 Sierra Skyway, Port Adamberg, MP 83168",carloshernandez@example.org,5099770088,FAILED,NEXT,SEVEN,FACE
+HLTH_MEM_019,Donna Shaw,1992-09-11,"18233 Ochoa Grove, Millerfurt, NH 74556",veronicaperez@example.net,0166687002,FAILED,QUITE,STILL,GLASS
+HLTH_MEM_020,Shannon Davis,1981-02-23,"PSC 3397, Box 4014, APO AP 74361",whitemelissa@example.org,9261429396,PENDING,SOMEONE,SISTER,CHALLENGE
+HLTH_MEM_021,iMelissa Miller,2025-13-40,"Unit 0163 Box 1599, DPO AP 52497",anthony47@example.com,5866296194,UNKNOWN_X,EXECUTIVE,CLASS,HUSBAND
+HLTH_MEM_022,Madison Singh,1966-10-04,"47541 Christopher Meadows, Hawkinshaven, MT 14039",davisangela@example.net,6046618398,FAILED,CHAIR,EXIST,FISH
+HLTH_MEM_023,Charles Jackson,1963-12-27,"54379 Stephen Dale Suite 065, Brockmouth, NV 44375",pochoa@example.net,4593752654,PENDING,GAS,HOWEVER,FAST
+HLTH_MEM_024,Jenna Wilson,1983-07-30,"807 Samuel Highway, Port Melaniechester, TX 65945",cynthiaallen@example.net,6617979688,VERIFIED,STREET,HERE,SCIENCE
+HLTH_MEM_025,Kimberly Little,1950-12-28,"529 Anna Rue, Rasmussenmouth, WY 56921",smithjonathan@example.net,7567982507,VERIFIED,WIFE,BED,BUSINESS
+HLTH_MEM_026,Monica Bailey,1968-07-20,"757 Samuel Square, Floresport, AZ 93664",johnsonmatthew@example.org,3828258673,VERIFIED,PUSH,REALLY,LAY
+HLTH_MEM_027,Omar Ware,1975-10-20,"33419 Lauren Plain Apt. 553, Wilsonfort, NC 84270",candice96@example.net,5579249912,VERIFIED,FOCUS,BUT,COVER
+HLTH_MEM_028,Charles Price,1985-10-17,"2782 Tracy Dam Apt. 579, Port Michaeltown, NM 18396",lisamaynard@example.net,6767721903,PENDING,DOWN,NOTE,FIGHT
+HLTH_MEM_029,Jim Newton,1997-04-30,"148 Weaver Throughway, Port Jenniferside, IL 56226",fitzgeralddesiree@example.org,0745171339,VERIFIED,COMPANY,POWER,CHAIR
+HLTH_MEM_030,iRobin Trujillo,2025-13-40,"825 Roberts Grove Apt. 260, Michelleberg, UT 17893",dustinmorris@example.org,7294667116,iACTIVE,LOOK,METHOD,GENERATION

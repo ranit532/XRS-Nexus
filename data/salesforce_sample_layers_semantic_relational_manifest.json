@@ -1,0 +1,1330 @@
+{
+  "dataset_name": "salesforce_sample_layers_semantic_relational",
+  "purpose": "Salesforce sample dataset with explicit cross-layer business keys while preserving layer, line-of-business, and business-domain semantics.",
+  "classification_rules": {
+    "layer_signal": "folder name plus entity semantics",
+    "lob_signal": "life/health/general business semantics in entity and attribute names",
+    "business_domain_signal": "attribute names with domain-specific meaning and entity context"
+  },
+  "files": [
+    {
+      "relative_path": "01_master_data_layer/sf_life_customer_profile_master.csv",
+      "entity_name": "sf_life_customer_profile_master",
+      "target_layer": "Master Data Layer",
+      "target_line_of_business": "Life Insurance",
+      "primary_business_domain": "Customer",
+      "business_keys": [
+        "life_customer_identifier"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "life_customer_identifier",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "customer_full_name",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "date_of_birth",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "customer_address",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "customer_email_address",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "customer_phone_number",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "customer_kyc_status",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "customer_risk_profile",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "policyholder_relationship_type",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "retirement_income_preference",
+          "intended_business_domain": "Customer"
+        }
+      ]
+    },
+    {
+      "relative_path": "01_master_data_layer/sf_life_beneficiary_party_master.csv",
+      "entity_name": "sf_life_beneficiary_party_master",
+      "target_layer": "Master Data Layer",
+      "target_line_of_business": "Life Insurance",
+      "primary_business_domain": "Party",
+      "business_keys": [
+        "beneficiary_party_identifier"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "beneficiary_party_identifier",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "beneficiary_full_name",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "beneficiary_relationship",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "nominee_indicator",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "beneficiary_share_percentage",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "party_role_type",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "related_life_customer_identifier",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "beneficiary_contact_channel",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "beneficiary_verification_status",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "trustee_or_nominee_reference",
+          "intended_business_domain": "Party"
+        }
+      ]
+    },
+    {
+      "relative_path": "01_master_data_layer/sf_life_policy_contract_master.csv",
+      "entity_name": "sf_life_policy_contract_master",
+      "target_layer": "Master Data Layer",
+      "target_line_of_business": "Life Insurance",
+      "primary_business_domain": "Policy",
+      "business_keys": [
+        "life_policy_number"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "life_policy_number",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "life_customer_identifier",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "beneficiary_party_identifier",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "annuity_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "policy_issue_date",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "policy_maturity_date",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "policy_status",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "premium_payment_frequency",
+          "intended_business_domain": "Premium_Billing"
+        },
+        {
+          "attribute_name": "sum_assured_amount",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "beneficiary_payout_option",
+          "intended_business_domain": "Party"
+        }
+      ]
+    },
+    {
+      "relative_path": "01_master_data_layer/sf_health_member_profile_master.csv",
+      "entity_name": "sf_health_member_profile_master",
+      "target_layer": "Master Data Layer",
+      "target_line_of_business": "Health Insurance",
+      "primary_business_domain": "Customer",
+      "business_keys": [
+        "insured_member_identifier"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "insured_member_identifier",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "insured_member_name",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "date_of_birth",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "member_address",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "member_email_address",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "member_phone_number",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "member_kyc_status",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "member_risk_profile",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "family_floater_indicator",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "pre_existing_disease_disclosure",
+          "intended_business_domain": "Customer"
+        }
+      ]
+    },
+    {
+      "relative_path": "01_master_data_layer/sf_health_provider_party_master.csv",
+      "entity_name": "sf_health_provider_party_master",
+      "target_layer": "Master Data Layer",
+      "target_line_of_business": "Health Insurance",
+      "primary_business_domain": "Party",
+      "business_keys": [
+        "provider_party_identifier"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "provider_party_identifier",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "hospital_name",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "medical_practitioner_name",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "provider_network_tier",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "cashless_provider_indicator",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "provider_speciality_type",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "service_provider_role_type",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "hospital_billing_contact",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "treatment_authorization_desk",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "admission_support_channel",
+          "intended_business_domain": "Party"
+        }
+      ]
+    },
+    {
+      "relative_path": "01_master_data_layer/sf_health_policy_contract_master.csv",
+      "entity_name": "sf_health_policy_contract_master",
+      "target_layer": "Master Data Layer",
+      "target_line_of_business": "Health Insurance",
+      "primary_business_domain": "Policy",
+      "business_keys": [
+        "health_policy_number"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "health_policy_number",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "insured_member_identifier",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "health_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "health_coverage_identifier",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "preferred_provider_party_identifier",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "policy_issue_date",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "coverage_start_date",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "coverage_end_date",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "policy_status",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "renewal_due_date",
+          "intended_business_domain": "Policy"
+        }
+      ]
+    },
+    {
+      "relative_path": "01_master_data_layer/sf_general_broker_distribution_master.csv",
+      "entity_name": "sf_general_broker_distribution_master",
+      "target_layer": "Master Data Layer",
+      "target_line_of_business": "General Insurance",
+      "primary_business_domain": "Distribution",
+      "business_keys": [
+        "broker_partner_identifier"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "broker_partner_identifier",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "broker_company_name",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "distribution_channel_type",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "broker_license_number",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "sales_partner_type",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "producer_hierarchy_level",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "sales_region_code",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "commission_rate_percentage",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "motor_commercial_specialty",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "property_liability_specialty",
+          "intended_business_domain": "Distribution"
+        }
+      ]
+    },
+    {
+      "relative_path": "01_master_data_layer/sf_general_policy_contract_master.csv",
+      "entity_name": "sf_general_policy_contract_master",
+      "target_layer": "Master Data Layer",
+      "target_line_of_business": "General Insurance",
+      "primary_business_domain": "Policy",
+      "business_keys": [
+        "general_policy_number"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "general_policy_number",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "broker_partner_identifier",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "general_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "underwriting_rule_identifier",
+          "intended_business_domain": "Underwriting_Risk"
+        },
+        {
+          "attribute_name": "policy_issue_date",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "coverage_start_date",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "coverage_end_date",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "policy_status",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "insured_asset_type",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "insured_value_amount",
+          "intended_business_domain": "Policy"
+        }
+      ]
+    },
+    {
+      "relative_path": "02_transactional_application_data_layer/sf_life_beneficiary_payout_claim_transaction.csv",
+      "entity_name": "sf_life_beneficiary_payout_claim_transaction",
+      "target_layer": "Transactional / Application Data Layer",
+      "target_line_of_business": "Life Insurance",
+      "primary_business_domain": "Claims",
+      "business_keys": [
+        "life_claim_number"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "life_claim_number",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "related_life_policy_number",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "beneficiary_party_identifier",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "claim_intimation_date",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "death_notification_date",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "claimant_relationship",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "beneficiary_settlement_amount",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "claim_status",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "nominee_document_review_status",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "maturity_claim_amount",
+          "intended_business_domain": "Claims"
+        }
+      ]
+    },
+    {
+      "relative_path": "02_transactional_application_data_layer/sf_life_premium_invoice_collection_transaction.csv",
+      "entity_name": "sf_life_premium_invoice_collection_transaction",
+      "target_layer": "Transactional / Application Data Layer",
+      "target_line_of_business": "Life Insurance",
+      "primary_business_domain": "Premium_Billing",
+      "business_keys": [
+        "premium_invoice_number"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "premium_invoice_number",
+          "intended_business_domain": "Premium_Billing"
+        },
+        {
+          "attribute_name": "life_policy_number",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "life_customer_identifier",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "billing_date",
+          "intended_business_domain": "Premium_Billing"
+        },
+        {
+          "attribute_name": "premium_due_date",
+          "intended_business_domain": "Premium_Billing"
+        },
+        {
+          "attribute_name": "premium_amount",
+          "intended_business_domain": "Premium_Billing"
+        },
+        {
+          "attribute_name": "payment_collection_status",
+          "intended_business_domain": "Premium_Billing"
+        },
+        {
+          "attribute_name": "outstanding_premium_amount",
+          "intended_business_domain": "Premium_Billing"
+        },
+        {
+          "attribute_name": "payment_method",
+          "intended_business_domain": "Premium_Billing"
+        },
+        {
+          "attribute_name": "receipt_reference_number",
+          "intended_business_domain": "Premium_Billing"
+        }
+      ]
+    },
+    {
+      "relative_path": "02_transactional_application_data_layer/sf_health_hospital_claim_transaction.csv",
+      "entity_name": "sf_health_hospital_claim_transaction",
+      "target_layer": "Transactional / Application Data Layer",
+      "target_line_of_business": "Health Insurance",
+      "primary_business_domain": "Claims",
+      "business_keys": [
+        "health_claim_number"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "health_claim_number",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "health_policy_number",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "insured_member_identifier",
+          "intended_business_domain": "Customer"
+        },
+        {
+          "attribute_name": "provider_party_identifier",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "hospitalization_date",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "discharge_date",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "diagnosis_code",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "treatment_type",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "cashless_authorization_number",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "approved_claim_amount",
+          "intended_business_domain": "Claims"
+        }
+      ]
+    },
+    {
+      "relative_path": "02_transactional_application_data_layer/sf_general_motor_loss_claim_transaction.csv",
+      "entity_name": "sf_general_motor_loss_claim_transaction",
+      "target_layer": "Transactional / Application Data Layer",
+      "target_line_of_business": "General Insurance",
+      "primary_business_domain": "Claims",
+      "business_keys": [
+        "general_claim_number"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "general_claim_number",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "general_policy_number",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "underwriting_rule_identifier",
+          "intended_business_domain": "Underwriting_Risk"
+        },
+        {
+          "attribute_name": "insured_vehicle_registration_number",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "loss_event_date",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "asset_damage_type",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "damage_assessment_amount",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "repair_estimate_amount",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "surveyor_report_reference",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "claim_settlement_amount",
+          "intended_business_domain": "Claims"
+        }
+      ]
+    },
+    {
+      "relative_path": "03_configuration_control_data_layer/sf_life_annuity_product_configuration.csv",
+      "entity_name": "sf_life_annuity_product_configuration",
+      "target_layer": "Configuration / Control Data",
+      "target_line_of_business": "Life Insurance",
+      "primary_business_domain": "Product",
+      "business_keys": [
+        "annuity_product_code"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "annuity_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "annuity_plan_name",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "product_eligibility_rule",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "premium_calculation_rule",
+          "intended_business_domain": "Premium_Billing"
+        },
+        {
+          "attribute_name": "retirement_income_option",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "survival_benefit_option",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "annuity_commencement_rule",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "product_regulatory_class",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "long_term_protection_feature",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "beneficiary_payout_option",
+          "intended_business_domain": "Party"
+        }
+      ]
+    },
+    {
+      "relative_path": "03_configuration_control_data_layer/sf_health_plan_product_configuration.csv",
+      "entity_name": "sf_health_plan_product_configuration",
+      "target_layer": "Configuration / Control Data",
+      "target_line_of_business": "Health Insurance",
+      "primary_business_domain": "Product",
+      "business_keys": [
+        "health_product_code"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "health_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "health_plan_name",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "product_eligibility_rule",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "premium_calculation_rule",
+          "intended_business_domain": "Premium_Billing"
+        },
+        {
+          "attribute_name": "wellness_benefit_option",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "family_floater_option",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "critical_illness_extension_option",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "product_regulatory_class",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "network_provider_rule",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "cashless_authorization_rule",
+          "intended_business_domain": "Product"
+        }
+      ]
+    },
+    {
+      "relative_path": "03_configuration_control_data_layer/sf_health_benefit_coverage_configuration.csv",
+      "entity_name": "sf_health_benefit_coverage_configuration",
+      "target_layer": "Configuration / Control Data",
+      "target_line_of_business": "Health Insurance",
+      "primary_business_domain": "Coverage_Benefits",
+      "business_keys": [
+        "health_coverage_identifier"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "health_coverage_identifier",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "health_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "benefit_type",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "sum_insured_amount",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "deductible_amount",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "copay_percentage",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "room_rent_limit_amount",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "critical_illness_cover_indicator",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "exclusion_description",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "benefit_limit_rule",
+          "intended_business_domain": "Coverage_Benefits"
+        }
+      ]
+    },
+    {
+      "relative_path": "03_configuration_control_data_layer/sf_general_motor_product_configuration.csv",
+      "entity_name": "sf_general_motor_product_configuration",
+      "target_layer": "Configuration / Control Data",
+      "target_line_of_business": "General Insurance",
+      "primary_business_domain": "Product",
+      "business_keys": [
+        "general_product_code"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "general_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "product_plan_name",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "product_eligibility_rule",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "premium_calculation_rule",
+          "intended_business_domain": "Premium_Billing"
+        },
+        {
+          "attribute_name": "liability_cover_option",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "property_damage_cover_option",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "theft_cover_option",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "product_regulatory_class",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "motor_usage_rule",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "commercial_vehicle_rule",
+          "intended_business_domain": "Product"
+        }
+      ]
+    },
+    {
+      "relative_path": "03_configuration_control_data_layer/sf_general_underwriting_risk_configuration.csv",
+      "entity_name": "sf_general_underwriting_risk_configuration",
+      "target_layer": "Configuration / Control Data",
+      "target_line_of_business": "General Insurance",
+      "primary_business_domain": "Underwriting_Risk",
+      "business_keys": [
+        "underwriting_rule_identifier"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "underwriting_rule_identifier",
+          "intended_business_domain": "Underwriting_Risk"
+        },
+        {
+          "attribute_name": "general_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "insured_asset_type",
+          "intended_business_domain": "Underwriting_Risk"
+        },
+        {
+          "attribute_name": "insured_asset_valuation_band",
+          "intended_business_domain": "Underwriting_Risk"
+        },
+        {
+          "attribute_name": "risk_score_threshold",
+          "intended_business_domain": "Underwriting_Risk"
+        },
+        {
+          "attribute_name": "risk_category",
+          "intended_business_domain": "Underwriting_Risk"
+        },
+        {
+          "attribute_name": "underwriting_decision",
+          "intended_business_domain": "Underwriting_Risk"
+        },
+        {
+          "attribute_name": "inspection_outcome_requirement",
+          "intended_business_domain": "Underwriting_Risk"
+        },
+        {
+          "attribute_name": "referral_status_trigger",
+          "intended_business_domain": "Underwriting_Risk"
+        },
+        {
+          "attribute_name": "theft_protection_requirement",
+          "intended_business_domain": "Underwriting_Risk"
+        }
+      ]
+    },
+    {
+      "relative_path": "03_configuration_control_data_layer/sf_general_accounting_posting_control_configuration.csv",
+      "entity_name": "sf_general_accounting_posting_control_configuration",
+      "target_layer": "Configuration / Control Data",
+      "target_line_of_business": "General Insurance",
+      "primary_business_domain": "Finance_Accounting",
+      "business_keys": [
+        "ledger_account_code"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "ledger_account_code",
+          "intended_business_domain": "Finance_Accounting"
+        },
+        {
+          "attribute_name": "journal_entry_type",
+          "intended_business_domain": "Finance_Accounting"
+        },
+        {
+          "attribute_name": "reserve_movement_reason",
+          "intended_business_domain": "Finance_Accounting"
+        },
+        {
+          "attribute_name": "commission_expense_posting_rule",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "written_premium_recognition_rule",
+          "intended_business_domain": "Finance_Accounting"
+        },
+        {
+          "attribute_name": "accounting_reconciliation_reference",
+          "intended_business_domain": "Finance_Accounting"
+        },
+        {
+          "attribute_name": "accrual_treatment_method",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "financial_reporting_classification",
+          "intended_business_domain": "Finance_Accounting"
+        },
+        {
+          "attribute_name": "claim_reserve_control_flag",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "posting_effective_date",
+          "intended_business_domain": "Finance_Accounting"
+        }
+      ]
+    },
+    {
+      "relative_path": "04_analytical_reporting_layer/sf_life_policy_maturity_reporting.csv",
+      "entity_name": "sf_life_policy_maturity_reporting",
+      "target_layer": "Analytical / Reporting Layer",
+      "target_line_of_business": "Life Insurance",
+      "primary_business_domain": "Policy",
+      "business_keys": [
+        "reporting_month",
+        "annuity_product_code"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "reporting_month",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "annuity_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "maturity_bucket",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "maturing_life_policy_count",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "annuity_commencement_count",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "annualized_premium_amount",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "beneficiary_exposure_amount",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "sum_assured_exposure_amount",
+          "intended_business_domain": "Coverage_Benefits"
+        },
+        {
+          "attribute_name": "servicing_state",
+          "intended_business_domain": "Policy"
+        }
+      ]
+    },
+    {
+      "relative_path": "04_analytical_reporting_layer/sf_health_claim_authorization_reporting.csv",
+      "entity_name": "sf_health_claim_authorization_reporting",
+      "target_layer": "Analytical / Reporting Layer",
+      "target_line_of_business": "Health Insurance",
+      "primary_business_domain": "Claims",
+      "business_keys": [
+        "reporting_month",
+        "health_product_code",
+        "provider_party_identifier"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "reporting_month",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "health_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "provider_party_identifier",
+          "intended_business_domain": "Party"
+        },
+        {
+          "attribute_name": "hospitalization_claim_count",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "cashless_authorization_count",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "approved_medical_claim_amount",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "average_length_of_stay_days",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "diagnosis_review_backlog_count",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "provider_settlement_sla_breach_count",
+          "intended_business_domain": "Party"
+        }
+      ]
+    },
+    {
+      "relative_path": "04_analytical_reporting_layer/sf_general_broker_profitability_reporting.csv",
+      "entity_name": "sf_general_broker_profitability_reporting",
+      "target_layer": "Analytical / Reporting Layer",
+      "target_line_of_business": "General Insurance",
+      "primary_business_domain": "Distribution",
+      "business_keys": [
+        "reporting_month",
+        "broker_partner_identifier",
+        "general_product_code"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "reporting_month",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "broker_partner_identifier",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "general_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "written_premium_amount",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "commission_expense_amount",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "bound_policy_count",
+          "intended_business_domain": "Policy"
+        },
+        {
+          "attribute_name": "quoted_motor_case_count",
+          "intended_business_domain": "Distribution"
+        },
+        {
+          "attribute_name": "channel_profitability_amount",
+          "intended_business_domain": "Distribution"
+        }
+      ]
+    },
+    {
+      "relative_path": "04_analytical_reporting_layer/sf_general_claim_reserve_reporting.csv",
+      "entity_name": "sf_general_claim_reserve_reporting",
+      "target_layer": "Analytical / Reporting Layer",
+      "target_line_of_business": "General Insurance",
+      "primary_business_domain": "Finance_Accounting",
+      "business_keys": [
+        "reporting_month",
+        "ledger_account_code",
+        "underwriting_rule_identifier",
+        "general_product_code"
+      ],
+      "attributes": [
+        {
+          "attribute_name": "reporting_month",
+          "intended_business_domain": "Finance_Accounting"
+        },
+        {
+          "attribute_name": "ledger_account_code",
+          "intended_business_domain": "Finance_Accounting"
+        },
+        {
+          "attribute_name": "underwriting_rule_identifier",
+          "intended_business_domain": "Underwriting_Risk"
+        },
+        {
+          "attribute_name": "general_product_code",
+          "intended_business_domain": "Product"
+        },
+        {
+          "attribute_name": "claim_reserve_amount",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "reserve_release_amount",
+          "intended_business_domain": "Finance_Accounting"
+        },
+        {
+          "attribute_name": "settled_general_claim_count",
+          "intended_business_domain": "Claims"
+        },
+        {
+          "attribute_name": "reserve_movement_reason",
+          "intended_business_domain": "Finance_Accounting"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from_entity": "sf_life_policy_contract_master",
+      "from_key": "life_customer_identifier",
+      "to_entity": "sf_life_customer_profile_master",
+      "to_key": "life_customer_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_life_policy_contract_master",
+      "from_key": "beneficiary_party_identifier",
+      "to_entity": "sf_life_beneficiary_party_master",
+      "to_key": "beneficiary_party_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_life_policy_contract_master",
+      "from_key": "annuity_product_code",
+      "to_entity": "sf_life_annuity_product_configuration",
+      "to_key": "annuity_product_code",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_life_beneficiary_payout_claim_transaction",
+      "from_key": "related_life_policy_number",
+      "to_entity": "sf_life_policy_contract_master",
+      "to_key": "life_policy_number",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_life_beneficiary_payout_claim_transaction",
+      "from_key": "beneficiary_party_identifier",
+      "to_entity": "sf_life_beneficiary_party_master",
+      "to_key": "beneficiary_party_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_life_premium_invoice_collection_transaction",
+      "from_key": "life_policy_number",
+      "to_entity": "sf_life_policy_contract_master",
+      "to_key": "life_policy_number",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_life_premium_invoice_collection_transaction",
+      "from_key": "life_customer_identifier",
+      "to_entity": "sf_life_customer_profile_master",
+      "to_key": "life_customer_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_life_policy_maturity_reporting",
+      "from_key": "annuity_product_code",
+      "to_entity": "sf_life_annuity_product_configuration",
+      "to_key": "annuity_product_code",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_health_policy_contract_master",
+      "from_key": "insured_member_identifier",
+      "to_entity": "sf_health_member_profile_master",
+      "to_key": "insured_member_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_health_policy_contract_master",
+      "from_key": "preferred_provider_party_identifier",
+      "to_entity": "sf_health_provider_party_master",
+      "to_key": "provider_party_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_health_policy_contract_master",
+      "from_key": "health_product_code",
+      "to_entity": "sf_health_plan_product_configuration",
+      "to_key": "health_product_code",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_health_policy_contract_master",
+      "from_key": "health_coverage_identifier",
+      "to_entity": "sf_health_benefit_coverage_configuration",
+      "to_key": "health_coverage_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_health_hospital_claim_transaction",
+      "from_key": "health_policy_number",
+      "to_entity": "sf_health_policy_contract_master",
+      "to_key": "health_policy_number",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_health_hospital_claim_transaction",
+      "from_key": "insured_member_identifier",
+      "to_entity": "sf_health_member_profile_master",
+      "to_key": "insured_member_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_health_hospital_claim_transaction",
+      "from_key": "provider_party_identifier",
+      "to_entity": "sf_health_provider_party_master",
+      "to_key": "provider_party_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_health_claim_authorization_reporting",
+      "from_key": "health_product_code",
+      "to_entity": "sf_health_plan_product_configuration",
+      "to_key": "health_product_code",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_health_claim_authorization_reporting",
+      "from_key": "provider_party_identifier",
+      "to_entity": "sf_health_provider_party_master",
+      "to_key": "provider_party_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_general_policy_contract_master",
+      "from_key": "broker_partner_identifier",
+      "to_entity": "sf_general_broker_distribution_master",
+      "to_key": "broker_partner_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_general_policy_contract_master",
+      "from_key": "general_product_code",
+      "to_entity": "sf_general_motor_product_configuration",
+      "to_key": "general_product_code",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_general_policy_contract_master",
+      "from_key": "underwriting_rule_identifier",
+      "to_entity": "sf_general_underwriting_risk_configuration",
+      "to_key": "underwriting_rule_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_general_motor_loss_claim_transaction",
+      "from_key": "general_policy_number",
+      "to_entity": "sf_general_policy_contract_master",
+      "to_key": "general_policy_number",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_general_motor_loss_claim_transaction",
+      "from_key": "underwriting_rule_identifier",
+      "to_entity": "sf_general_underwriting_risk_configuration",
+      "to_key": "underwriting_rule_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_general_broker_profitability_reporting",
+      "from_key": "broker_partner_identifier",
+      "to_entity": "sf_general_broker_distribution_master",
+      "to_key": "broker_partner_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_general_broker_profitability_reporting",
+      "from_key": "general_product_code",
+      "to_entity": "sf_general_motor_product_configuration",
+      "to_key": "general_product_code",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_general_claim_reserve_reporting",
+      "from_key": "ledger_account_code",
+      "to_entity": "sf_general_accounting_posting_control_configuration",
+      "to_key": "ledger_account_code",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_general_claim_reserve_reporting",
+      "from_key": "underwriting_rule_identifier",
+      "to_entity": "sf_general_underwriting_risk_configuration",
+      "to_key": "underwriting_rule_identifier",
+      "relationship_type": "many_to_one"
+    },
+    {
+      "from_entity": "sf_general_claim_reserve_reporting",
+      "from_key": "general_product_code",
+      "to_entity": "sf_general_motor_product_configuration",
+      "to_key": "general_product_code",
+      "relationship_type": "many_to_one"
+    }
+  ]
+}
